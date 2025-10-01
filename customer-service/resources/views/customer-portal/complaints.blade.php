@@ -15,9 +15,7 @@
                 <div class="flex items-center">
                     <h1 class="text-2xl font-bold text-gray-900 mr-4">Komplain Saya</h1>
                     @php
-                        $newFeedbackCount = $complaints->where('cs_response', '!=', null)->filter(function($complaint) {
-                            return !isset($complaint->feedback_read_by_customer) || $complaint->feedback_read_by_customer === false;
-                        })->count();
+                        $newFeedbackCount = $complaints->where('cs_response', '!=', null)->count();
                     @endphp
                     @if($newFeedbackCount > 0)
                         <div class="flex items-center bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -85,7 +83,7 @@
                                         // Check if this complaint is marked as read in localStorage
                                         const isRead{{ $complaint->id }} = localStorage.getItem('{{ $isReadKey }}') === 'true';
                                     </script>
-                                    @if(!isset($complaint->feedback_read_by_customer) || !$complaint->feedback_read_by_customer)
+                                    @if($complaint->cs_response)
                                         <!-- Feedback BARU - Menyala -->
                                         <tr class="bg-green-50 border-2 border-green-200 animate-pulse">
                                             <td class="px-6 py-3 text-sm font-medium text-green-700 bg-green-100 align-top">

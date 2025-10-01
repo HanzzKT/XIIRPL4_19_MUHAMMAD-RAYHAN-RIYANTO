@@ -29,16 +29,16 @@ class CustomerController extends Controller
         
         $customers = $query->latest()->paginate(15);
         
-        return view('customers.index', compact('customers'));
+        return view('customer-management.index', compact('customers'));
     }
     
     
     public function show(User $customer)
     {
         // Load the customer profile and related data
-        $customer->load(['customer.createdBy', 'customer.complaints.category', 'customer.complaints.createdBy']);
+        $customer->load(['customer', 'customer.complaints.category']);
         
-        return view('customers.show', compact('customer'));
+        return view('customer-management.show', compact('customer'));
     }
     
     public function edit(User $customer)
@@ -46,7 +46,7 @@ class CustomerController extends Controller
         // Load the customer profile
         $customer->load('customer');
         
-        return view('customers.edit', compact('customer'));
+        return view('customer-management.edit', compact('customer'));
     }
     
     public function update(Request $request, User $customer)

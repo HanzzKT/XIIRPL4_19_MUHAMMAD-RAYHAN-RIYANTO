@@ -92,17 +92,19 @@
                 </div>
 
 
-                <!-- Escalation Info Section -->
+                <!-- Escalation & Manager Action Section -->
                 @if($complaint->escalation_to)
                 <div class="md:col-span-2">
                     <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                        <h3 class="text-sm font-medium text-red-800 mb-3">
-                            <i class="fas fa-exclamation-triangle mr-2"></i>Informasi Eskalasi
+                        <h3 class="text-sm font-medium text-red-800 mb-4">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>Eskalasi & Tindakan Manager
                         </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        
+                        <!-- Escalation Info -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
                             <div>
                                 <span class="font-medium text-red-700">Dieskalasi ke:</span>
-                                <span class="text-red-900">{{ $complaint->escalatedTo->name ?? 'Manager' }}</span>
+                                <span class="text-red-900">{{ $complaint->escalatedTo->name ?? 'Manager CS' }}</span>
                             </div>
                             <div>
                                 <span class="font-medium text-red-700">Tanggal Eskalasi:</span>
@@ -114,36 +116,38 @@
                             </div>
                             <div>
                                 <span class="font-medium text-red-700">Dieskalasi oleh:</span>
-                                <span class="text-red-900">{{ $complaint->escalatedBy->name ?? 'CS' }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Manager Action Section -->
-                    @if($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action:'))
-                    <div class="mt-4 bg-purple-50 border border-purple-200 rounded-lg p-4">
-                        <h3 class="text-sm font-medium text-purple-800 mb-3">
-                            <i class="fas fa-cogs mr-2"></i>Tindakan Manager
-                        </h3>
-                        <div class="text-sm">
-                            <div class="mb-2">
-                                <span class="font-medium text-purple-700">Status Tindakan:</span>
-                                <span class="text-purple-900">
-                                    @if(str_contains($complaint->action_notes, 'resolved'))
-                                        <i class="fas fa-check-circle mr-1"></i>Masalah Ditangani
-                                    @else
-                                        <i class="fas fa-arrow-left mr-1"></i>Dikembalikan ke CS
-                                    @endif
-                                </span>
-                            </div>
-                            <div class="mb-2">
-                                <span class="font-medium text-purple-700">Detail:</span>
-                                <p class="text-purple-900 mt-1">{{ $complaint->action_notes }}</p>
+                                <span class="text-red-900">{{ $complaint->escalatedBy->name ?? 'Staff CS' }}</span>
                             </div>
                         </div>
                         
+                        <!-- Manager Action (if exists) -->
+                        @if($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action:'))
+                        <div class="border-t border-red-200 pt-4">
+                            <div class="text-sm">
+                                <div class="mb-3">
+                                    <span class="font-medium text-red-700">Tindakan Manager:</span>
+                                    <span class="ml-2 px-2 py-1 text-xs font-medium rounded-full {{ str_contains($complaint->action_notes, 'resolved') ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                        @if(str_contains($complaint->action_notes, 'resolved'))
+                                            <i class="fas fa-check-circle mr-1"></i>Masalah Ditangani
+                                        @else
+                                            <i class="fas fa-arrow-left mr-1"></i>Dikembalikan ke CS
+                                        @endif
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="font-medium text-red-700">Detail Tindakan:</span>
+                                    <p class="text-red-900 mt-1 bg-white bg-opacity-50 p-2 rounded">{{ $complaint->action_notes }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        @else
+                        <div class="border-t border-red-200 pt-4">
+                            <p class="text-sm text-red-700 italic">
+                                <i class="fas fa-clock mr-1"></i>Menunggu tindakan dari Manager
+                            </p>
+                        </div>
+                        @endif
                     </div>
-                    @endif
                 </div>
                 @endif
 
@@ -221,95 +225,6 @@
                 </div>
                 @endif
 
-                <!-- Manager Verification Section -->
-                @if($complaint->status === 'selesai' && auth()->user()->role === 'manager')
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-shield-check mr-2 text-purple-600"></i>Verifikasi Manager
-                    </label>
-                    
-                    @if($complaint->verification_status === 'pending')
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                            <div class="flex items-center mb-2">
-                                <i class="fas fa-clock text-yellow-600 mr-2"></i>
-                                <span class="text-sm font-medium text-yellow-800">Menunggu Verifikasi Manager</span>
-                            </div>
-                            <p class="text-sm text-yellow-700 mb-4">Komplain ini telah diselesaikan oleh CS dan memerlukan verifikasi dari Manager.</p>
-                            
-                            <div class="flex space-x-3">
-                                <form method="POST" action="{{ route('complaints.verify', $complaint) }}" class="inline-block">
-                                    @csrf
-                                    @method('PATCH')
-                                    <input type="hidden" name="verification_status" value="approved">
-                                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm">
-                                        <i class="fas fa-check mr-2"></i>Approve
-                                    </button>
-                                </form>
-                                
-                                <form method="POST" action="{{ route('complaints.verify', $complaint) }}" class="inline-block">
-                                    @csrf
-                                    @method('PATCH')
-                                    <input type="hidden" name="verification_status" value="rejected">
-                                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm" onclick="return confirm('Yakin ingin reject? Komplain akan dikembalikan ke CS.')">
-                                        <i class="fas fa-times mr-2"></i>Reject
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    @elseif($complaint->verification_status === 'approved')
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                            <div class="flex items-center">
-                                <i class="fas fa-check-circle text-green-600 mr-2"></i>
-                                <span class="text-sm font-medium text-green-800">Disetujui oleh Manager</span>
-                            </div>
-                            @if($complaint->verified_at)
-                                <p class="text-xs text-green-600 mt-1">
-                                    {{ $complaint->verified_at->format('d M Y, H:i') }} oleh {{ $complaint->verifiedBy->name ?? 'Manager' }}
-                                </p>
-                            @endif
-                        </div>
-                    @elseif($complaint->verification_status === 'rejected')
-                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                            <div class="flex items-center">
-                                <i class="fas fa-times-circle text-red-600 mr-2"></i>
-                                <span class="text-sm font-medium text-red-800">Ditolak oleh Manager</span>
-                            </div>
-                            @if($complaint->verified_at)
-                                <p class="text-xs text-red-600 mt-1">
-                                    {{ $complaint->verified_at->format('d M Y, H:i') }} oleh {{ $complaint->verifiedBy->name ?? 'Manager' }}
-                                </p>
-                            @endif
-                            <p class="text-sm text-red-700 mt-2">Komplain perlu ditinjau ulang oleh CS.</p>
-                        </div>
-                    @endif
-                </div>
-                @elseif($complaint->verification_status !== 'pending')
-                <!-- Display verification status for non-manager users -->
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-shield-check mr-2 text-purple-600"></i>Status Verifikasi
-                    </label>
-                    @if($complaint->verification_status === 'approved')
-                        <div class="px-3 py-2 border border-green-300 rounded-md bg-green-50 text-green-800">
-                            <i class="fas fa-check-circle mr-2"></i>Disetujui Manager
-                            @if($complaint->verified_at)
-                                <div class="text-xs text-green-600 mt-1">
-                                    {{ $complaint->verified_at->format('d M Y, H:i') }}
-                                </div>
-                            @endif
-                        </div>
-                    @elseif($complaint->verification_status === 'rejected')
-                        <div class="px-3 py-2 border border-red-300 rounded-md bg-red-50 text-red-800">
-                            <i class="fas fa-times-circle mr-2"></i>Ditolak Manager
-                            @if($complaint->verified_at)
-                                <div class="text-xs text-red-600 mt-1">
-                                    {{ $complaint->verified_at->format('d M Y, H:i') }}
-                                </div>
-                            @endif
-                        </div>
-                    @endif
-                </div>
-                @endif
             </div>
 
             <!-- Action Buttons -->

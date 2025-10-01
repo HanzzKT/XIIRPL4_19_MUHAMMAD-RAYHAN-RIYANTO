@@ -69,22 +69,31 @@ class DashboardController extends Controller
                 ->take(5)
                 ->get(),
         ];
-        return view('admin.dashboard', compact('stats', 'recentComplaints', 'recentUsers', 'analytics'));
+        return view('admin-dashboard.dashboard', compact('stats', 'recentComplaints', 'recentUsers', 'analytics'));
     }
 
     public function managerDashboard()
     {
-        // Manager sees all complaints like admin
+        // Manager focuses on escalated complaints
+        $totalEscalated = Complaint::whereNotNull('escalation_to')->count();
+        $completedEscalated = Complaint::whereNotNull('escalation_to')
+            ->where('status', 'selesai')->count();
+        
         $stats = [
-            'totalComplaints' => Complaint::count(),
-            'escalatedComplaints' => Complaint::whereNotNull('escalation_to')->count(),
-            'completedComplaints' => Complaint::where('status', 'selesai')->count(),
-            'completionRate' => $this->getCompletionRate(),
+            'totalEscalations' => $totalEscalated,
+            'completedEscalations' => $completedEscalated,
+            'pendingEscalations' => Complaint::whereNotNull('escalation_to')
+                ->where(function($query) {
+                    $query->whereNull('action_notes')
+                          ->orWhere('action_notes', 'not like', 'Manager Action:%');
+                })->count(),
+            'escalationCompletionRate' => $totalEscalated > 0 ? round(($completedEscalated / $totalEscalated) * 100, 1) : 0,
             'activeCS' => User::where('role', 'cs')->where('is_active', true)->count(),
         ];
         
-        // Recent complaints for manager to monitor
+        // Recent escalated complaints for manager to monitor
         $recentComplaints = Complaint::with(['customer', 'category', 'handledBy'])
+            ->whereNotNull('escalation_to')
             ->latest()
             ->take(10)
             ->get();
@@ -92,12 +101,15 @@ class DashboardController extends Controller
         // Escalated complaints that need manager action
         $escalatedComplaints = Complaint::with(['customer', 'category', 'handledBy'])
             ->whereNotNull('escalation_to')
-            ->whereNull('manager_action')
+            ->where(function($query) {
+                $query->whereNull('action_notes')
+                      ->orWhere('action_notes', 'not like', 'Manager Action:%');
+            })
             ->latest()
             ->take(5)
             ->get();
         
-        return view('manager.dashboard', compact('stats', 'recentComplaints', 'escalatedComplaints'));
+        return view('manager-dashboard.dashboard', compact('stats', 'recentComplaints', 'escalatedComplaints'));
     }
 
 
@@ -112,7 +124,6 @@ class DashboardController extends Controller
             'completedComplaints' => Complaint::where('status', 'selesai')->count(),
             'myHandledComplaints' => Complaint::where('handled_by', $user->id)->count(),
             'myResolvedComplaints' => Complaint::where('resolved_by', $user->id)->count(),
-            'whatsappComplaints' => Complaint::where('source', 'whatsapp')->where('status', 'baru')->count(),
         ];
         
         // Only show complaints without assigned CS
@@ -122,31 +133,10 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
             
-        $whatsappComplaints = Complaint::with(['customer', 'category', 'handledBy'])
-            ->where('source', 'whatsapp')
-            ->where('status', 'baru')
-            ->whereNull('handled_by')
-            ->latest()
-            ->take(5)
-            ->get();
-        
-        return view('cs.dashboard', compact('stats', 'recentComplaints', 'whatsappComplaints'));
+        return view('customer-service-dashboard.dashboard', compact('stats', 'recentComplaints'));
     }
     
     
-    public function whatsappNotifications()
-    {
-        $whatsappComplaints = Complaint::with(['customer', 'category', 'handledBy'])
-            ->where('source', 'whatsapp')
-            ->latest()
-            ->paginate(15);
-            
-        $newWhatsAppComplaints = Complaint::where('source', 'whatsapp')
-            ->where('status', 'baru')
-            ->count();
-        
-        return view('cs.notifications', compact('whatsappComplaints', 'newWhatsAppComplaints'));
-    }
 
     public function analytics()
     {
@@ -182,12 +172,12 @@ class DashboardController extends Controller
             ];
         }
         
-        return view('manager.analytics', compact('analytics'));
+        return view('manager-dashboard.analytics', compact('analytics'));
     }
 
     public function reports()
     {
-        return view('manager.reports');
+        return view('manager-dashboard.reports');
     }
 
     public function exportReport(Request $request)

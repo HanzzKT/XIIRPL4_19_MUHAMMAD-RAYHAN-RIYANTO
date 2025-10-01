@@ -103,14 +103,13 @@ class DatabaseSeeder extends Seeder
             'address' => 'Jl. Thamrin No. 789, Jakarta',
         ]);
 
-        // Create sample complaints (input by CS staff, not customers directly)
+        // Create sample complaints
         Complaint::create([
             'customer_id' => $customerProfile1->id,
             'complaint_category_id' => 1,
             'description' => 'Tabung gas 12kg yang baru diantar ternyata bocor di bagian regulator. Sudah coba dipasang tapi gas terus keluar.',
             'customer_phone' => '081234567890',
             'status' => 'diproses',
-            'source' => 'phone',
         ]);
 
         Complaint::create([
@@ -119,16 +118,39 @@ class DatabaseSeeder extends Seeder
             'description' => 'Galon air yang diantar dalam kondisi kotor dan berbau tidak sedap. Ada kerak putih di bagian dalam galon.',
             'customer_phone' => '081234567891',
             'status' => 'selesai',
-            'source' => 'whatsapp',
         ]);
 
+        // Create escalated complaint with manager action
         Complaint::create([
             'customer_id' => $customerProfile3->id,
             'complaint_category_id' => 3,
             'description' => 'Pesanan gas yang dijanjikan hari Senin baru datang hari Rabu. Sudah menunggu tapi tidak ada kabar dari driver.',
             'customer_phone' => '081234567892',
-            'status' => 'baru',
-            'source' => 'phone',
+            'status' => 'selesai',
+            'handled_by' => $csStaff->id,
+            'resolved_by' => $csStaff->id,
+            'resolved_at' => now(),
+            'escalation_to' => $manager->id,
+            'escalated_at' => now()->subHours(2),
+            'escalation_reason' => 'tidak ada kabar driver',
+            'escalated_by' => $csStaff->id,
+            'action_notes' => 'Manager Action: resolved - Notes: driver sebentar lagi akan tiba karena kendala distribusi',
+            'cs_response' => 'saya sudah menghubungi driver sebentar lagi akan tiba',
+            'cs_response_updated_at' => now()->subMinutes(30),
+        ]);
+
+        // Create escalated complaint waiting for manager action
+        Complaint::create([
+            'customer_id' => $customerProfile1->id,
+            'complaint_category_id' => 1,
+            'description' => 'Tabung gas bocor parah, sudah ganti regulator tetap bocor. Kemungkinan ada masalah di tabung.',
+            'customer_phone' => '081234567890',
+            'status' => 'diproses',
+            'handled_by' => $csStaff->id,
+            'escalation_to' => $manager->id,
+            'escalated_at' => now()->subHour(),
+            'escalation_reason' => 'masalah teknis tabung yang kompleks, perlu penanganan khusus',
+            'escalated_by' => $csStaff->id,
         ]);
     }
 }

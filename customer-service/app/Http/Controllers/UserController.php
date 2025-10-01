@@ -28,12 +28,12 @@ class UserController extends Controller
         
         $users = $query->latest()->paginate(15);
         
-        return view('users.index', compact('users'));
+        return view('user-management.index', compact('users'));
     }
     
     public function create()
     {
-        return view('users.create');
+        return view('user-management.create');
     }
     
     public function store(Request $request)
@@ -61,12 +61,12 @@ class UserController extends Controller
             $user->load(['handledComplaints', 'resolvedComplaints']);
         }
         
-        return view('users.show', compact('user'));
+        return view('user-management.show', compact('user'));
     }
     
     public function edit(User $user)
     {
-        return view('users.edit', compact('user'));
+        return view('user-management.edit', compact('user'));
     }
     
     public function update(Request $request, User $user)

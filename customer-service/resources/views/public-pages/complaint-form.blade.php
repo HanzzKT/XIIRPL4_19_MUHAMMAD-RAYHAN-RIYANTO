@@ -1,4 +1,4 @@
-@extends('public.layout')
+@extends('public-pages.layout')
 
 @section('title', 'Buat Komplain - PT Karunia Laris Abadi')
 

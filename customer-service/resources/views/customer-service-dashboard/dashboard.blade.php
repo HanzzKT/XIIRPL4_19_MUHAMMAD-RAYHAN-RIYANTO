@@ -1,32 +1,32 @@
 @extends('layouts.sidebar')
 
-@section('title', 'Dashboard CS - PT Karunia Laris Abadi')
-@section('page-title', 'Dashboard Customer Service')
+@section('title', 'CS Dashboard - PT Karunia Laris Abadi')
+@section('page-title', 'Customer Service Dashboard')
 
 @section('content')
-<div class="space-y-4">
-    <!-- Header modern (tanpa card) -->
-    <div class="pb-2">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">Dashboard Customer Service</h1>
-                <p class="text-sm text-gray-500">Halo, {{ auth()->user()->name }}.</p>
-            </div>
-            <div class="hidden md:flex items-center">
-                <div id="realTimeClock" class="text-sm font-medium text-gray-700 bg-gray-100 px-4 py-2 rounded-lg">
-                    <i class="fas fa-clock mr-2 text-blue-600"></i>
-                    <span id="currentDateTime">22 Sep 2025, 22:04</span>
-                </div>
+<div class="space-y-8 p-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-display font-semibold text-[#171717] tracking-tight">CS Dashboard</h1>
+            <p class="text-[#71717a] mt-1">Hello, {{ auth()->user()->name }}!</p>
+        </div>
+        <div class="hidden md:flex items-center">
+            <div id="realTimeClock" class="vercel-card px-4 py-2 text-sm">
+                <svg class="w-4 h-4 mr-2 text-[#71717a] inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span id="currentDateTime" class="font-medium text-[#171717]">22 Sep 2025, 22:04</span>
             </div>
         </div>
     </div>
 
     <!-- Quick Actions: dihapus sesuai permintaan -->
 
-    <!-- Statistics Chart (bar) -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="text-lg font-semibold text-gray-900">Ringkasan Komplain</h3>
+    <!-- Statistics Chart -->
+    <div class="vercel-card">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-display font-semibold text-[#171717]">Complaint Summary</h3>
         </div>
         <div class="relative">
             <canvas id="csStatsChart" class="w-full" style="max-height: 280px"></canvas>

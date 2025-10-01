@@ -92,9 +92,21 @@
                                 {{ ucfirst($complaint->status) }}
                             </span>
                             @if($complaint->escalation_to)
-                                <span class="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
-                                    <i class="fas fa-exclamation-triangle mr-1"></i>DIESKALASI
-                                </span>
+                                @if($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action:'))
+                                    @if(str_contains($complaint->action_notes, 'resolved'))
+                                        <span class="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                            <i class="fas fa-check-circle mr-1"></i>MANAGER SELESAI
+                                        </span>
+                                    @else
+                                        <span class="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                                            <i class="fas fa-arrow-left mr-1"></i>DIKEMBALIKAN
+                                        </span>
+                                    @endif
+                                @else
+                                    <span class="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-800">
+                                        <i class="fas fa-clock mr-1"></i>MENUNGGU MANAGER
+                                    </span>
+                                @endif
                             @endif
                         </td>
                         <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600">
@@ -106,11 +118,11 @@
                             
                             @if(auth()->user()->role === 'manager')
                                 <!-- Manager bisa memberikan tindakan dan menyelesaikan komplain -->
-                                @if($complaint->escalation_to && !$complaint->manager_action)
+                                @if($complaint->escalation_to && (!$complaint->action_notes || !str_contains($complaint->action_notes, 'Manager Action:')))
                                     <a href="{{ route('complaints.manager-action-form', $complaint) }}" class="text-white bg-purple-600 hover:bg-purple-700 transition-colors duration-200 px-3 py-1 rounded text-xs inline-flex items-center">
                                         <i class="fas fa-cog mr-1"></i>Tindakan Manager
                                     </a>
-                                @elseif($complaint->manager_action === 'resolved' && $complaint->status !== 'selesai')
+                                @elseif($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action: resolved') && $complaint->status !== 'selesai')
                                     <!-- Manager bisa menyelesaikan complaint setelah resolved -->
                                     <form method="POST" action="{{ route('complaints.update-status', $complaint) }}" class="inline-block">
                                         @csrf
@@ -118,9 +130,13 @@
                                         <input type="hidden" name="status" value="selesai">
                                         <button type="submit" class="text-white bg-green-600 hover:bg-green-700 transition-colors duration-200 px-3 py-1 rounded text-xs">Selesai</button>
                                     </form>
-                                @elseif($complaint->manager_action)
+                                @elseif($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action:'))
                                     <span class="text-green-600 text-xs bg-green-100 px-2 py-1 rounded">
-                                        ✓ {{ ucfirst(str_replace('_', ' ', $complaint->manager_action)) }}
+                                        @if(str_contains($complaint->action_notes, 'resolved'))
+                                            ✓ Sudah Ditangani
+                                        @else
+                                            ✓ Dikembalikan ke CS
+                                        @endif
                                     </span>
                                 @endif
                             @elseif(auth()->user()->role === 'admin')
@@ -159,11 +175,11 @@
                                             <i class="fas fa-exclamation-triangle mr-1"></i>Dieskalasi ke Manager
                                         </span>
                                         
-                                        @if($complaint->manager_action === 'resolved')
+                                        @if($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action: resolved'))
                                             <span class="text-green-600 text-xs bg-green-100 px-2 py-1 rounded">
                                                 <i class="fas fa-check-circle mr-1"></i>Manager Sudah Tangani - Berikan Feedback
                                             </span>
-                                        @elseif($complaint->manager_action === 'return_to_cs')
+                                        @elseif($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action: return_to_cs'))
                                             <span class="text-blue-600 text-xs bg-blue-100 px-2 py-1 rounded">
                                                 <i class="fas fa-arrow-left mr-1"></i>Dikembalikan ke CS
                                             </span>

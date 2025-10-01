@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Geist:wght@300;400;500;600;700&display=swap');
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -6,75 +7,85 @@
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'Poppins', 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    --font-sans: 'Inter', 'Geist', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
-    --font-display: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Geist', 'Inter', ui-sans-serif, system-ui, sans-serif;
     --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Force sidebar navigation to be horizontal */
+/* Vercel-style sidebar with black gradient */
+.sidebar-container {
+    background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
 .sidebar-nav-link {
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
-    padding: 10px 16px !important;
-    margin: 0 8px !important;
+    padding: 12px 16px !important;
+    margin: 4px 12px !important;
     font-size: 14px !important;
     font-weight: 500 !important;
-    color: rgb(196 181 253) !important;
+    color: rgba(255, 255, 255, 0.7) !important;
     border-radius: 8px !important;
-    transition: all 0.2s !important;
-    min-height: 40px !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    min-height: 44px !important;
+    border: 1px solid transparent !important;
 }
 
 .sidebar-nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    color: white !important;
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    transform: translateX(2px) !important;
 }
 
 .sidebar-nav-link.active {
-    background-color: rgba(255, 255, 255, 0.15) !important;
+    background-color: rgba(255, 255, 255, 0.12) !important;
     color: white !important;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Modern emerald-based palette for eye comfort */
-  --background: oklch(0.99 0.005 120);
-  --foreground: oklch(0.35 0.02 240);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.25 0.03 160);
-  --popover: oklch(0.98 0.01 120);
-  --popover-foreground: oklch(0.35 0.02 240);
-  --primary: oklch(0.45 0.15 160); /* Emerald 600 */
-  --primary-foreground: oklch(0.99 0.005 120);
-  --secondary: oklch(0.96 0.01 220);
-  --secondary-foreground: oklch(0.35 0.02 240);
-  --muted: oklch(0.96 0.01 220);
-  --muted-foreground: oklch(0.55 0.02 240);
-  --accent: oklch(0.55 0.15 160); /* Emerald 500 */
-  --accent-foreground: oklch(0.99 0.005 120);
-  --destructive: oklch(0.55 0.22 15);
-  --destructive-foreground: oklch(0.99 0.005 120);
-  --border: oklch(0.92 0.01 220);
-  --input: oklch(0.96 0.01 220);
-  --ring: oklch(0.45 0.15 160);
-  --chart-1: oklch(0.55 0.15 160); /* Emerald */
-  --chart-2: oklch(0.65 0.25 330); /* Pink */
-  --chart-3: oklch(0.7 0.2 70); /* Amber */
-  --chart-4: oklch(0.6 0.2 240); /* Blue */
-  --chart-5: oklch(0.55 0.25 280); /* Purple */
-  --radius: 0.75rem;
-  --sidebar: oklch(0.98 0.01 120);
-  --sidebar-foreground: oklch(0.35 0.02 240);
-  --sidebar-primary: oklch(0.45 0.15 160);
-  --sidebar-primary-foreground: oklch(0.99 0.005 120);
-  --sidebar-accent: oklch(0.55 0.15 160);
-  --sidebar-accent-foreground: oklch(0.99 0.005 120);
-  --sidebar-border: oklch(0.92 0.01 220);
-  --sidebar-ring: oklch(0.55 0.15 160);
+  /* Vercel-inspired design system */
+  --background: #fafafa;
+  --foreground: #171717;
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --popover: #ffffff;
+  --popover-foreground: #171717;
+  --primary: #000000;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #f4f4f5;
+  --accent-foreground: #18181b;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e4e4e7;
+  --input: #ffffff;
+  --ring: #18181b;
+  --chart-1: #000000;
+  --chart-2: #ef4444;
+  --chart-3: #f59e0b;
+  --chart-4: #3b82f6;
+  --chart-5: #8b5cf6;
+  --radius: 0.5rem;
+  --sidebar: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: rgba(255, 255, 255, 0.1);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #ffffff;
 }
 
 .dark {
@@ -113,10 +124,10 @@
 }
 
 @theme inline {
-  --font-sans: 'Poppins', 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter', 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Geist', 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-mono: 'Geist Mono', 'JetBrains Mono', 'Fira Code', monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -161,20 +172,24 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Poppins', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    font-family: 'Inter', 'Geist', ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
   
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+    font-family: 'Geist', 'Inter', ui-sans-serif, system-ui, sans-serif;
     font-weight: 600;
+    letter-spacing: -0.025em;
   }
   
   .font-display {
-    font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+    font-family: 'Geist', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
   
   .font-body {
     font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 }
 
@@ -233,9 +248,84 @@
     height: 18px !important;
     margin-right: 12px !important;
     flex-shrink: 0 !important;
+    opacity: 0.8 !important;
+    transition: opacity 0.2s ease !important;
+}
+
+.sidebar-nav-link:hover svg,
+.sidebar-nav-link.active svg {
+    opacity: 1 !important;
 }
 
 .sidebar-nav-link span {
     font-size: 14px !important;
     line-height: 1.4 !important;
+    font-weight: 500 !important;
+}
+
+/* Vercel-style components */
+.vercel-card {
+    background: white;
+    border: 1px solid #e4e4e7;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+.vercel-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: #d4d4d8;
+}
+
+.vercel-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.vercel-button-primary {
+    background: #000000;
+    color: white;
+    border-color: #000000;
+}
+
+.vercel-button-primary:hover {
+    background: #1a1a1a;
+    border-color: #1a1a1a;
+}
+
+.vercel-button-secondary {
+    background: white;
+    color: #171717;
+    border-color: #e4e4e7;
+}
+
+.vercel-button-secondary:hover {
+    background: #f4f4f5;
+    border-color: #d4d4d8;
+}
+
+.vercel-input {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #e4e4e7;
+    border-radius: 6px;
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.vercel-input:focus {
+    outline: none;
+    border-color: #000000;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
 }

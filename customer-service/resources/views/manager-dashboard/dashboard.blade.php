@@ -1,71 +1,77 @@
 @extends('layouts.sidebar')
 
 @section('title', 'Manager Dashboard - PT Karunia Laris Abadi')
-@section('page-title', 'Dashboard Manager')
+@section('page-title', 'Manager Dashboard')
 
 @section('content')
-<div class="space-y-4">
-    <!-- Welcome Header -->
-    <div class="bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl p-6 text-white shadow-sm">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-xl font-bold mb-1">Dashboard Manager</h1>
-                <p class="text-purple-100 text-sm">Selamat datang, {{ auth()->user()->name }}!</p>
-            </div>
-            <div class="hidden md:block">
-                <div id="realTimeClock" class="text-sm font-medium text-white bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl">
-                    <i class="fas fa-clock mr-2"></i>
-                    <span id="currentDateTime">22 Sep 2025, 22:04</span>
-                </div>
+<div class="space-y-8 p-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-display font-semibold text-[#171717] tracking-tight">Manager Dashboard</h1>
+            <p class="text-[#71717a] mt-1">Welcome back, {{ auth()->user()->name }}!</p>
+        </div>
+        <div class="hidden md:flex items-center">
+            <div id="realTimeClock" class="vercel-card px-4 py-2 text-sm">
+                <svg class="w-4 h-4 mr-2 text-[#71717a] inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span id="currentDateTime" class="font-medium text-[#171717]">22 Sep 2025, 22:04</span>
             </div>
         </div>
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="vercel-card group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-medium text-gray-600">Total Eskalasi</p>
-                    <p class="text-xl font-bold text-red-600">{{ $stats['escalatedComplaints'] }}</p>
+                    <p class="text-sm text-[#71717a] mb-1">Total Escalations</p>
+                    <p class="text-2xl font-display font-semibold text-[#ef4444]">{{ $stats['totalEscalations'] }}</p>
                 </div>
-                <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-exclamation-triangle text-xs text-red-600"></i>
+                <div class="w-10 h-10 bg-[#fef2f2] rounded-lg flex items-center justify-center group-hover:bg-[#fee2e2] transition-colors">
+                    <svg class="w-5 h-5 text-[#ef4444]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200">
+        <div class="vercel-card group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-medium text-gray-600">Komplain Selesai</p>
-                    <p class="text-xl font-bold text-green-600">{{ $stats['completedComplaints'] }}</p>
+                    <p class="text-sm text-[#71717a] mb-1">Completed</p>
+                    <p class="text-2xl font-display font-semibold text-[#22c55e]">{{ $stats['completedEscalations'] }}</p>
                 </div>
-                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-check-circle text-xs text-green-600"></i>
+                <div class="w-10 h-10 bg-[#f0fdf4] rounded-lg flex items-center justify-center group-hover:bg-[#dcfce7] transition-colors">
+                    <svg class="w-5 h-5 text-[#22c55e]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200">
+        <div class="vercel-card group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-medium text-gray-600">Tingkat Penyelesaian</p>
-                    <p class="text-xl font-bold text-blue-600">{{ number_format($stats['completionRate'], 1) }}%</p>
+                    <p class="text-sm text-[#71717a] mb-1">Completion Rate</p>
+                    <p class="text-2xl font-display font-semibold text-[#171717]">{{ number_format($stats['escalationCompletionRate'], 1) }}%</p>
                 </div>
-                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-chart-line text-xs text-blue-600"></i>
+                <div class="w-10 h-10 bg-[#f4f4f5] rounded-lg flex items-center justify-center group-hover:bg-[#e4e4e7] transition-colors">
+                    <svg class="w-5 h-5 text-[#71717a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Analytics Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Performance Metrics -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-            <div class="p-4 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-900">Metrik Performa</h2>
+        <div class="vercel-card">
+            <div class="mb-6">
+                <h2 class="text-xl font-display font-semibold text-[#171717]">Performance Metrics</h2>
             </div>
             <div class="p-4">
                 <div class="space-y-3">
@@ -96,7 +102,7 @@
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-lg font-bold text-green-600">{{ $stats['completionRate'] }}%</p>
+                            <p class="text-lg font-bold text-green-600">{{ $stats['escalationCompletionRate'] }}%</p>
                             <p class="text-xs text-gray-600">dari total</p>
                         </div>
                     </div>
@@ -148,8 +154,12 @@
                             <div class="flex items-center space-x-2">
                                 @if($complaint->escalation_to)
                                     <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">DIESKALASI</span>
-                                    @if($complaint->manager_action)
-                                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">{{ ucfirst(str_replace('_', ' ', $complaint->manager_action)) }}</span>
+                                    @if($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action:'))
+                                        @if(str_contains($complaint->action_notes, 'resolved'))
+                                            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Sudah Ditangani</span>
+                                        @else
+                                            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Dikembalikan ke CS</span>
+                                        @endif
                                     @else
                                         <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">Menunggu Tindakan</span>
                                     @endif

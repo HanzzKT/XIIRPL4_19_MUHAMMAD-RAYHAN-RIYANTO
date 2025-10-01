@@ -35,7 +35,7 @@ class PublicController extends Controller
             }
         }
 
-        return view('public.index', compact('categories', 'complaints'));
+        return view('public-pages.index', compact('categories', 'complaints'));
     }
 
     public function faq()
@@ -63,7 +63,7 @@ class PublicController extends Controller
             ]
         ];
 
-        return view('public.faq', compact('faqs'));
+        return view('public-pages.faq', compact('faqs'));
     }
 
     public function contact()
@@ -79,7 +79,7 @@ class PublicController extends Controller
             ]
         ];
 
-        return view('public.contact', compact('contacts'));
+        return view('public-pages.contact', compact('contacts'));
     }
 
     public function complaintFlow()
@@ -117,6 +117,6 @@ class PublicController extends Controller
             ]
         ];
 
-        return view('public.complaint-flow', compact('steps'));
+        return view('public-pages.complaint-flow', compact('steps'));
     }
 }

@@ -48,7 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware(['role:customer'])->group(function () {
         Route::get('/customer/complaints', [\App\Http\Controllers\CustomerComplaintController::class, 'index'])->name('customer.complaints');
         Route::post('/customer/complaints/{complaint}/mark-read', [\App\Http\Controllers\CustomerComplaintController::class, 'markAsRead'])->name('customer.complaints.mark-read');
-        Route::delete('/customer/complaints/{complaint}/delete', [\App\Http\Controllers\CustomerComplaintController::class, 'delete'])->name('customer.complaints.delete');
+        Route::delete('/customer/complaints/{complaint}', [\App\Http\Controllers\CustomerComplaintController::class, 'delete'])->name('customer.complaints.delete');
     });
     
     
@@ -64,7 +64,6 @@ Route::middleware('auth')->group(function () {
     // CS Routes - View and manage complaints only
     Route::middleware(['role:cs,admin'])->group(function () {
         Route::get('cs/dashboard', [DashboardController::class, 'csDashboard'])->name('cs.dashboard');
-        Route::get('cs/whatsapp-notifications', [DashboardController::class, 'whatsappNotifications'])->name('cs.whatsapp-notifications');
         Route::get('complaints/{complaint}/edit', [ComplaintController::class, 'edit'])->name('complaints.edit');
         Route::patch('complaints/{complaint}', [ComplaintController::class, 'update'])->name('complaints.update');
         Route::patch('complaints/{complaint}/response', [ComplaintController::class, 'updateResponse'])->name('complaints.update-response');
@@ -104,7 +103,6 @@ Route::middleware('auth')->group(function () {
     // Manager Routes - Only managers can access these
     Route::middleware(['role:manager'])->group(function () {
         Route::get('manager/dashboard', [DashboardController::class, 'managerDashboard'])->name('manager.dashboard');
-        Route::patch('complaints/{complaint}/verify', [ComplaintController::class, 'verifyComplaint'])->name('complaints.verify');
         Route::get('complaints/{complaint}/manager-action', [ComplaintController::class, 'managerActionForm'])->name('complaints.manager-action-form');
         Route::patch('complaints/{complaint}/manager-action', [ComplaintController::class, 'managerAction'])->name('complaints.manager-action');
     });

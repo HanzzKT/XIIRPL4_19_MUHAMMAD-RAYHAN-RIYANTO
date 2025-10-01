@@ -1,4 +1,4 @@
-@extends('public.layout')
+@extends('public-pages.layout')
 
 @section('title', 'Beranda')
 
@@ -370,42 +370,66 @@
 <script>
 function deleteComplaint(complaintId) {
     if (confirm('Apakah Anda yakin ingin menghapus komplain ini? Tindakan ini tidak dapat dibatalkan.')) {
-        fetch(`/customer/complaints/${complaintId}/delete`, {
+        // Check if CSRF token exists
+        const csrfToken = document.querySelector('meta[name="csrf-token"]');
+        if (!csrfToken) {
+            alert('CSRF token tidak ditemukan. Silakan refresh halaman.');
+            return;
+        }
+
+        fetch(`/customer/complaints/${complaintId}`, {
             method: 'DELETE',
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
+            
+            if (!response.ok) {
+                return response.text().then(text => {
+                    console.error('Error response body:', text);
+                    throw new Error(`HTTP error! status: ${response.status}, body: ${text}`);
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 // Remove the table row with animation
                 const row = document.getElementById(`komplain-${complaintId}`);
-                row.style.transition = 'all 0.3s ease';
-                row.style.opacity = '0';
-                row.style.transform = 'translateX(-100%)';
-                
-                setTimeout(() => {
-                    row.remove();
+                if (row) {
+                    row.style.transition = 'all 0.3s ease';
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(-100%)';
                     
-                    // Check if no complaints left in table
-                    const tbody = document.querySelector('tbody');
-                    const remainingRows = tbody.querySelectorAll('tr:not(.hidden)');
-                    if (remainingRows.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-6 text-center text-gray-500">Belum ada komplain.</td></tr>';
-                    }
-                }, 300);
+                    setTimeout(() => {
+                        row.remove();
+                        
+                        // Check if no complaints left in table
+                        const tbody = document.querySelector('tbody');
+                        const remainingRows = tbody.querySelectorAll('tr:not(.hidden)');
+                        if (remainingRows.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-6 text-center text-gray-500">Belum ada komplain.</td></tr>';
+                        }
+                    }, 300);
+                }
                 
                 // Show success message
                 alert('Komplain berhasil dihapus');
+                
+                // Optional: reload page to ensure data consistency
+                // window.location.reload();
             } else {
                 alert(data.message || 'Gagal menghapus komplain');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Terjadi kesalahan saat menghapus komplain');
+            alert('Terjadi kesalahan saat menghapus komplain: ' + error.message);
         });
     }
 }

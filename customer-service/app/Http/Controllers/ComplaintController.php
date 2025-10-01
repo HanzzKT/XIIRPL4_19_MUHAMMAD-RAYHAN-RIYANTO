@@ -16,9 +16,12 @@ class ComplaintController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $query = Complaint::with(['customer', 'category', 'handledBy', 'resolvedBy', 'createdBy']);
+        $query = Complaint::with(['customer', 'category', 'handledBy', 'resolvedBy']);
         
-        // All roles can see all complaints
+        // Manager only sees escalated complaints
+        if ($user->role === 'manager') {
+            $query->whereNotNull('escalation_to');
+        }
         
         // Filter by status
         if ($request->filled('status')) {
@@ -44,7 +47,7 @@ class ComplaintController extends Controller
         $complaints = $query->latest()->paginate(15);
         $categories = ComplaintCategory::active()->get();
         
-        return view('complaints.index', compact('complaints', 'categories'));
+        return view('complaint-management.index', compact('complaints', 'categories'));
     }
 
     public function exportPdf(Request $request)
@@ -86,7 +89,7 @@ class ComplaintController extends Controller
         $filename = 'laporan-komplain-' . date('Y-m-d-H-i-s') . '.pdf';
         
         // Generate PDF using DOMPDF
-        $pdf = Pdf::loadView('complaints.pdf', compact('complaints', 'request'))
+        $pdf = Pdf::loadView('complaint-management.pdf', compact('complaints', 'request'))
             ->setPaper('a4', 'portrait')
             ->setOptions([
                 'defaultFont' => 'Arial',
@@ -112,14 +115,14 @@ class ComplaintController extends Controller
                 ->get();
         }
         
-        return view('customer.complaints', compact('complaints'));
+        return view('customer-portal.complaints', compact('complaints'));
     }
 
     public function create()
     {
         $categories = ComplaintCategory::active()->get();
         
-        return view('complaints.create', compact('categories'));
+        return view('complaint-management.create', compact('categories'));
     }
     
     public function store(Request $request)
@@ -158,7 +161,6 @@ class ComplaintController extends Controller
             'description' => $request->description,
             'customer_phone' => $customer->phone,
             'status' => 'baru',
-            'source' => 'website',
         ]);
 
         return redirect()->route('customer.complaints')->with('success', 'Komplain Anda berhasil dikirim! Tim CS kami akan segera menghubungi Anda.');
@@ -172,9 +174,9 @@ class ComplaintController extends Controller
                 ->with('info', 'Silakan lihat komplain Anda di halaman Komplain Saya');
         }
         
-        $complaint->load(['customer.user', 'category', 'handledBy', 'resolvedBy', 'createdBy']);
+        $complaint->load(['customer.user', 'category', 'handledBy', 'resolvedBy']);
         
-        return view('complaints.show', compact('complaint'));
+        return view('complaint-management.show', compact('complaint'));
     }
     
     public function edit(Complaint $complaint)
@@ -182,7 +184,7 @@ class ComplaintController extends Controller
         $customers = Customer::orderBy('name')->get();
         $categories = ComplaintCategory::active()->get();
         
-        return view('complaints.edit', compact('complaint', 'customers', 'categories'));
+        return view('complaint-management.edit', compact('complaint', 'customers', 'categories'));
     }
     
     public function update(Request $request, Complaint $complaint)
@@ -245,7 +247,7 @@ class ComplaintController extends Controller
         }
         
         $categories = ComplaintCategory::where('is_active', true)->get();
-        return view('public.complaint-form', compact('categories'));
+        return view('public-pages.complaint-form', compact('categories'));
     }
 
     public function storePublic(Request $request)
@@ -299,7 +301,7 @@ class ComplaintController extends Controller
                 ->with('error', 'Komplain sudah dieskalasi sebelumnya');
         }
 
-        return view('complaints.escalate-form', compact('complaint'));
+        return view('complaint-management.escalate-form', compact('complaint'));
     }
 
     public function escalateToManager(Request $request, Complaint $complaint)
@@ -335,33 +337,6 @@ class ComplaintController extends Controller
             ->with('success', 'Komplain berhasil dieskalasi ke Manager: ' . $manager->name . '. Manager akan menangani masalah dan CS akan memberikan feedback ke customer.');
     }
 
-    public function verifyComplaint(Request $request, Complaint $complaint)
-    {
-        $request->validate([
-            'verification_status' => 'required|in:approved,rejected'
-        ]);
-
-        if ($request->verification_status === 'approved') {
-            $complaint->update([
-                'verification_status' => 'approved',
-                'verified_by' => auth()->id(),
-                'verified_at' => now()
-            ]);
-            
-            $message = 'Komplain berhasil disetujui dan telah final';
-        } else {
-            $complaint->update([
-                'verification_status' => 'rejected',
-                'verified_by' => auth()->id(),
-                'verified_at' => now(),
-                'status' => 'diproses' // Return to CS for revision
-            ]);
-            
-            $message = 'Komplain ditolak dan dikembalikan ke CS untuk perbaikan';
-        }
-
-        return redirect()->back()->with('success', $message);
-    }
 
     public function managerActionForm(Complaint $complaint)
     {
@@ -377,7 +352,7 @@ class ComplaintController extends Controller
                 ->with('error', 'Tindakan Manager sudah diambil sebelumnya');
         }
 
-        return view('complaints.manager-action-form', compact('complaint'));
+        return view('complaint-management.manager-action-form', compact('complaint'));
     }
 
     public function managerAction(Request $request, Complaint $complaint)
@@ -390,33 +365,28 @@ class ComplaintController extends Controller
         if ($request->manager_action === 'resolved') {
             // Manager menandai masalah sudah ditangani, tapi CS yang harus memberikan feedback final
             $complaint->update([
-                'manager_action' => $request->manager_action,
-                'manager_notes' => $request->manager_notes,
-                'manager_action_at' => now(),
-                'manager_action_by' => auth()->id(),
                 'action_notes' => 'Manager Action: ' . $request->manager_action . 
                                 ($request->manager_notes ? ' - Notes: ' . $request->manager_notes : ''),
                 // Status tetap 'diproses' karena CS harus memberikan feedback final
             ]);
             
-            $message = 'Masalah telah ditangani. CS dapat memberikan feedback final ke customer.';
+            $message = 'Masalah berhasil ditandai sebagai sudah ditangani. CS akan memberikan feedback final ke customer.';
         } else {
             // Manager mengembalikan ke CS untuk ditangani lebih lanjut
             $complaint->update([
-                'manager_action' => $request->manager_action,
-                'manager_notes' => $request->manager_notes,
-                'manager_action_at' => now(),
-                'manager_action_by' => auth()->id(),
                 'action_notes' => 'Manager Action: ' . $request->manager_action . 
                                 ($request->manager_notes ? ' - Notes: ' . $request->manager_notes : ''),
                 'escalation_to' => null, // Hapus eskalasi
                 'escalated_at' => null,
+                'escalation_reason' => null,
+                'escalated_by' => null,
             ]);
             
-            $message = 'Komplain dikembalikan ke CS untuk ditangani lebih lanjut.';
+            $message = 'Komplain berhasil dikembalikan ke CS untuk penanganan lebih lanjut.';
         }
 
-        return redirect()->route('complaints.show', $complaint)->with('success', $message);
+        return redirect()->route('complaints.show', $complaint)
+            ->with('success', $message);
     }
 
     public function destroy(Complaint $complaint)

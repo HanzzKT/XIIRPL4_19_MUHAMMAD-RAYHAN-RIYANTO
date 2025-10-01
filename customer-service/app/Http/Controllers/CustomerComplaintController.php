@@ -24,7 +24,7 @@ class CustomerComplaintController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('customer.complaints', compact('complaints'));
+        return view('customer-portal.complaints', compact('complaints'));
     }
 
     public function markAsRead(Request $request, Complaint $complaint)
@@ -39,52 +39,55 @@ class CustomerComplaintController extends Controller
             ], 403);
         }
 
-        try {
-            // Mark feedback as read
-            $complaint->update([
-                'feedback_read_by_customer' => true,
-                'feedback_read_at' => now()
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Feedback berhasil ditandai sebagai sudah dibaca'
-            ]);
-        } catch (\Exception $e) {
-            // If fields don't exist, just return success for now
-            return response()->json([
-                'success' => true,
-                'message' => 'Feedback sudah ditandai sebagai dibaca'
-            ]);
-        }
+        // Since we removed feedback tracking columns, just return success
+        return response()->json([
+            'success' => true,
+            'message' => 'Feedback berhasil ditandai sebagai sudah dibaca'
+        ]);
     }
 
     public function delete(Request $request, Complaint $complaint)
     {
-        // Verify this complaint belongs to the current customer
-        $customer = Customer::where('user_id', Auth::id())->first();
-        
-        if (!$customer || $complaint->customer_id !== $customer->id) {
+        try {
+            // Verify this complaint belongs to the current customer
+            $customer = Customer::where('user_id', Auth::id())->first();
+            
+            if (!$customer) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Customer data tidak ditemukan'
+                ], 404);
+            }
+            
+            if ($complaint->customer_id !== $customer->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda tidak memiliki akses untuk menghapus komplain ini'
+                ], 403);
+            }
+
+            // Check if complaint can be deleted (only 'baru' or 'selesai' status)
+            if (!in_array($complaint->status, ['baru', 'selesai'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Komplain yang sedang diproses tidak dapat dihapus'
+                ], 400);
+            }
+
+            // Delete the complaint
+            $complaint->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Komplain berhasil dihapus'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error deleting complaint: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized access'
-            ], 403);
+                'message' => 'Terjadi kesalahan saat menghapus komplain: ' . $e->getMessage()
+            ], 500);
         }
-
-        // Check if complaint can be deleted (only 'baru' or 'selesai' status)
-        if (!in_array($complaint->status, ['baru', 'selesai'])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Komplain yang sedang diproses tidak dapat dihapus'
-            ], 400);
-        }
-
-        // Delete the complaint
-        $complaint->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Komplain berhasil dihapus'
-        ]);
     }
 }

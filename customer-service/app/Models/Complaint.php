@@ -17,37 +17,22 @@ class Complaint extends Model
         'description',
         'customer_phone',
         'status',
-        'source',
         'handled_by',
         'resolved_by',
         'resolved_at',
-        'verified_by',
-        'verified_at',
         'action_notes',
         'cs_response',
         'cs_response_updated_at',
-        'verification_status',
-        'feedback_read_by_customer',
-        'feedback_read_at',
-        'created_by',
         'escalation_to',
         'escalated_at',
         'escalation_reason',
         'escalated_by',
-        'manager_action',
-        'manager_notes',
-        'manager_action_at',
-        'manager_action_by',
     ];
 
     protected $casts = [
         'resolved_at' => 'datetime',
-        'verified_at' => 'datetime',
         'escalated_at' => 'datetime',
         'cs_response_updated_at' => 'datetime',
-        'feedback_read_at' => 'datetime',
-        'feedback_read_by_customer' => 'boolean',
-        'manager_action_at' => 'datetime',
     ];
 
     public function customer(): BelongsTo
@@ -70,16 +55,6 @@ class Complaint extends Model
         return $this->belongsTo(User::class, 'resolved_by');
     }
 
-    public function createdBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
-
-    public function verifiedBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'verified_by');
-    }
-
     public function escalatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'escalated_by');
@@ -88,11 +63,6 @@ class Complaint extends Model
     public function escalatedTo(): BelongsTo
     {
         return $this->belongsTo(User::class, 'escalation_to');
-    }
-
-    public function managerActionBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'manager_action_by');
     }
 
     public function scopeByStatus($query, $status)

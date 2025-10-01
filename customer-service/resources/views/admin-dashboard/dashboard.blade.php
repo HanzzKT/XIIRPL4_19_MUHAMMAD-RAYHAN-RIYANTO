@@ -1,111 +1,124 @@
 @extends('layouts.sidebar')
 
-@section('title', 'Dashboard Admin - PT Karunia Laris Abadi')
-@section('page-title', 'Dashboard Admin')
+@section('title', 'Admin Dashboard - PT Karunia Laris Abadi')
+@section('page-title', 'Admin Dashboard')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-8 p-6">
     <!-- Header with Real-time Clock -->
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Dashboard Admin</h1>
-            <p class="text-sm text-gray-500">Selamat datang, {{ auth()->user()->name }}!</p>
+            <h1 class="text-3xl font-display font-semibold text-[#171717] tracking-tight">Admin Dashboard</h1>
+            <p class="text-[#71717a] mt-1">Welcome back, {{ auth()->user()->name }}!</p>
         </div>
         <div class="hidden md:flex items-center">
-            <div id="realTimeClock" class="text-sm font-medium text-gray-700 bg-gray-100 px-4 py-2 rounded-lg">
-                <i class="fas fa-clock mr-2 text-blue-600"></i>
-                <span id="currentDateTime"></span>
+            <div id="realTimeClock" class="vercel-card px-4 py-2 text-sm">
+                <svg class="w-4 h-4 mr-2 text-[#71717a] inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span id="currentDateTime" class="font-medium text-[#171717]"></span>
             </div>
         </div>
     </div>
 
     <!-- Main Statistics -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <!-- Total Komplain -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <!-- Total Complaints -->
+        <div class="vercel-card group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600">Total Komplain</p>
-                    <p class="text-2xl font-bold text-purple-600">{{ $stats['totalComplaints'] }}</p>
+                    <p class="text-sm text-[#71717a] mb-1">Total Complaints</p>
+                    <p class="text-2xl font-display font-semibold text-[#171717]">{{ $stats['totalComplaints'] }}</p>
                 </div>
-                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-exclamation-triangle text-purple-600"></i>
+                <div class="w-10 h-10 bg-[#f4f4f5] rounded-lg flex items-center justify-center group-hover:bg-[#e4e4e7] transition-colors">
+                    <svg class="w-5 h-5 text-[#71717a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
                 </div>
             </div>
         </div>
 
-        <!-- Total Eskalasi -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <!-- Total Escalations -->
+        <div class="vercel-card group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600">Total Eskalasi</p>
-                    <p class="text-2xl font-bold text-red-600">{{ $stats['escalatedComplaints'] }}</p>
+                    <p class="text-sm text-[#71717a] mb-1">Escalations</p>
+                    <p class="text-2xl font-display font-semibold text-[#ef4444]">{{ $stats['escalatedComplaints'] }}</p>
                 </div>
-                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-arrow-up text-red-600"></i>
+                <div class="w-10 h-10 bg-[#fef2f2] rounded-lg flex items-center justify-center group-hover:bg-[#fee2e2] transition-colors">
+                    <svg class="w-5 h-5 text-[#ef4444]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
+                    </svg>
                 </div>
             </div>
         </div>
 
         <!-- Total Users -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="vercel-card group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600">Total Pengguna</p>
-                    <p class="text-2xl font-bold text-blue-600">{{ $stats['totalUsers'] }}</p>
+                    <p class="text-sm text-[#71717a] mb-1">Total Users</p>
+                    <p class="text-2xl font-display font-semibold text-[#171717]">{{ $stats['totalUsers'] }}</p>
                 </div>
-                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-users text-blue-600"></i>
+                <div class="w-10 h-10 bg-[#f4f4f5] rounded-lg flex items-center justify-center group-hover:bg-[#e4e4e7] transition-colors">
+                    <svg class="w-5 h-5 text-[#71717a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                    </svg>
                 </div>
             </div>
         </div>
 
         <!-- Total Customers -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="vercel-card group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600">Total Customer</p>
-                    <p class="text-2xl font-bold text-green-600">{{ $stats['totalCustomers'] }}</p>
+                    <p class="text-sm text-[#71717a] mb-1">Total Customers</p>
+                    <p class="text-2xl font-display font-semibold text-[#171717]">{{ $stats['totalCustomers'] }}</p>
                 </div>
-                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-user-friends text-green-600"></i>
+                <div class="w-10 h-10 bg-[#f0fdf4] rounded-lg flex items-center justify-center group-hover:bg-[#dcfce7] transition-colors">
+                    <svg class="w-5 h-5 text-[#22c55e]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
                 </div>
             </div>
         </div>
 
-        <!-- Total Categories -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <!-- Active Categories -->
+        <div class="vercel-card group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600">Kategori Aktif</p>
-                    <p class="text-2xl font-bold text-orange-600">{{ $stats['totalCategories'] }}</p>
+                    <p class="text-sm text-[#71717a] mb-1">Active Categories</p>
+                    <p class="text-2xl font-display font-semibold text-[#171717]">{{ $stats['totalCategories'] }}</p>
                 </div>
-                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-tags text-orange-600"></i>
+                <div class="w-10 h-10 bg-[#fff7ed] rounded-lg flex items-center justify-center group-hover:bg-[#ffedd5] transition-colors">
+                    <svg class="w-5 h-5 text-[#f59e0b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    </svg>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Recent Complaints -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div class="p-6 border-b border-gray-200">
-            <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-gray-900">Komplain Terbaru</h2>
-                <a href="{{ route('complaints.index') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                    Lihat Semua
-                </a>
-            </div>
+    <div class="vercel-card">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-display font-semibold text-[#171717]">Recent Complaints</h2>
+            <a href="{{ route('complaints.index') }}" class="vercel-button vercel-button-secondary text-sm">
+                View All
+                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </a>
         </div>
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto -mx-6">
             <table class="w-full">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="text-left py-3 px-6 font-medium text-gray-600">Tanggal</th>
-                        <th class="text-left py-3 px-6 font-medium text-gray-600">Pelanggan</th>
-                        <th class="text-left py-3 px-6 font-medium text-gray-600">Komplain</th>
-                        <th class="text-left py-3 px-6 font-medium text-gray-600">Status</th>
-                        <th class="text-left py-3 px-6 font-medium text-gray-600">CS</th>
+                <thead>
+                    <tr class="border-b border-[#e4e4e7]">
+                        <th class="text-left py-3 px-6 text-sm font-medium text-[#71717a]">Date</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-[#71717a]">Customer</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-[#71717a]">Complaint</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-[#71717a]">Status</th>
+                        <th class="text-left py-3 px-6 text-sm font-medium text-[#71717a]">CS Agent</th>
                     </tr>
                 </thead>
                 <tbody>

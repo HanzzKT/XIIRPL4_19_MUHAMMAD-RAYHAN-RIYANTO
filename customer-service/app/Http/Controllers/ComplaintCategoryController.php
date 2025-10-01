@@ -11,12 +11,12 @@ class ComplaintCategoryController extends Controller
     {
         $categories = ComplaintCategory::withCount('complaints')->latest()->paginate(15);
         
-        return view('complaint-categories.index', compact('categories'));
+        return view('category-management.index', compact('categories'));
     }
     
     public function create()
     {
-        return view('complaint-categories.create');
+        return view('category-management.create');
     }
     
     public function store(Request $request)
@@ -35,7 +35,7 @@ class ComplaintCategoryController extends Controller
     
     public function edit(ComplaintCategory $complaintCategory)
     {
-        return view('complaint-categories.edit', compact('complaintCategory'));
+        return view('category-management.edit', compact('complaintCategory'));
     }
     
     public function update(Request $request, ComplaintCategory $complaintCategory)
