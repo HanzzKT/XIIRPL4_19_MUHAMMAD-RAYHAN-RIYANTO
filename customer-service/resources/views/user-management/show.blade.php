@@ -9,7 +9,7 @@
             <p class="text-gray-600 mt-1">Informasi lengkap user {{ $user->name }}</p>
         </div>
         <div class="flex space-x-3">
-            <a href="{{ route('users.index') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors duration-200">
+            <a href="{{ auth()->user()->role === 'manager' ? route('manager.users.index') : route('users.index') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors duration-200">
                 Kembali
             </a>
             @if($user->role === 'cs' || ($user->role === 'manager' && auth()->user()->role === 'admin'))

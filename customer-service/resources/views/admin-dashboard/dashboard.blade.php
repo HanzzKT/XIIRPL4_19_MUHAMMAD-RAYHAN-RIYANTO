@@ -8,8 +8,8 @@
     <!-- Header with Real-time Clock -->
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-display font-semibold text-[#171717] tracking-tight">Admin Dashboard</h1>
-            <p class="text-[#71717a] mt-1">Welcome back, {{ auth()->user()->name }}!</p>
+            <h1 class="text-3xl font-display font-semibold text-[#171717] tracking-tight">Dashboard Admin</h1>
+            <p class="text-[#71717a] mt-1">Selamat datang kembali, {{ auth()->user()->name }}!</p>
         </div>
         <div class="hidden md:flex items-center">
             <div id="realTimeClock" class="vercel-card px-4 py-2 text-sm">
@@ -27,7 +27,7 @@
         <div class="vercel-card group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-[#71717a] mb-1">Total Complaints</p>
+                    <p class="text-sm text-[#71717a] mb-1">Total Komplain</p>
                     <p class="text-2xl font-display font-semibold text-[#171717]">{{ $stats['totalComplaints'] }}</p>
                 </div>
                 <div class="w-10 h-10 bg-[#f4f4f5] rounded-lg flex items-center justify-center group-hover:bg-[#e4e4e7] transition-colors">
@@ -42,7 +42,7 @@
         <div class="vercel-card group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-[#71717a] mb-1">Escalations</p>
+                    <p class="text-sm text-[#71717a] mb-1">Eskalasi</p>
                     <p class="text-2xl font-display font-semibold text-[#ef4444]">{{ $stats['escalatedComplaints'] }}</p>
                 </div>
                 <div class="w-10 h-10 bg-[#fef2f2] rounded-lg flex items-center justify-center group-hover:bg-[#fee2e2] transition-colors">
@@ -57,7 +57,7 @@
         <div class="vercel-card group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-[#71717a] mb-1">Total Users</p>
+                    <p class="text-sm text-[#71717a] mb-1">Total Pengguna</p>
                     <p class="text-2xl font-display font-semibold text-[#171717]">{{ $stats['totalUsers'] }}</p>
                 </div>
                 <div class="w-10 h-10 bg-[#f4f4f5] rounded-lg flex items-center justify-center group-hover:bg-[#e4e4e7] transition-colors">
@@ -72,7 +72,7 @@
         <div class="vercel-card group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-[#71717a] mb-1">Total Customers</p>
+                    <p class="text-sm text-[#71717a] mb-1">Total Pelanggan</p>
                     <p class="text-2xl font-display font-semibold text-[#171717]">{{ $stats['totalCustomers'] }}</p>
                 </div>
                 <div class="w-10 h-10 bg-[#f0fdf4] rounded-lg flex items-center justify-center group-hover:bg-[#dcfce7] transition-colors">
@@ -87,7 +87,7 @@
         <div class="vercel-card group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-[#71717a] mb-1">Active Categories</p>
+                    <p class="text-sm text-[#71717a] mb-1">Kategori Aktif</p>
                     <p class="text-2xl font-display font-semibold text-[#171717]">{{ $stats['totalCategories'] }}</p>
                 </div>
                 <div class="w-10 h-10 bg-[#fff7ed] rounded-lg flex items-center justify-center group-hover:bg-[#ffedd5] transition-colors">

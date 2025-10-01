@@ -27,12 +27,15 @@ class Complaint extends Model
         'escalated_at',
         'escalation_reason',
         'escalated_by',
+        'manager_claimed_by',
+        'manager_claimed_at',
     ];
 
     protected $casts = [
         'resolved_at' => 'datetime',
         'escalated_at' => 'datetime',
         'cs_response_updated_at' => 'datetime',
+        'manager_claimed_at' => 'datetime',
     ];
 
     public function customer(): BelongsTo
@@ -63,6 +66,11 @@ class Complaint extends Model
     public function escalatedTo(): BelongsTo
     {
         return $this->belongsTo(User::class, 'escalation_to');
+    }
+
+    public function managerClaimedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'manager_claimed_by');
     }
 
     public function scopeByStatus($query, $status)

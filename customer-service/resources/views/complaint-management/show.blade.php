@@ -275,7 +275,7 @@
                                     @if(!($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action:')))
                                         <!-- Manager belum memberikan action -->
                                         <a href="{{ route('complaints.manager-action-form', $complaint) }}" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center">
-                                            <i class="fas fa-cogs mr-2"></i>Tangani Masalah
+                                            <i class="fas fa-clipboard-list mr-2"></i>Berikan Instruksi
                                         </a>
                                     @elseif($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action: resolved'))
                                         <div class="px-4 py-2 bg-purple-100 text-purple-800 rounded-lg">

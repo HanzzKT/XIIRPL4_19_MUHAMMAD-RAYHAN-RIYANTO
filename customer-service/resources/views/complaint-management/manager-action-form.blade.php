@@ -1,14 +1,15 @@
 @extends('layouts.sidebar')
 
-@section('title', 'Tindakan Manager - PT Karunia Laris Abadi')
-@section('page-title', 'Tindakan Manager')
+@section('title', 'Instruksi Manager - PT Karunia Laris Abadi')
+@section('page-title', 'Instruksi Manager')
 
 @section('content')
 <div class="max-w-2xl mx-auto">
     <!-- Header -->
     <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Tindakan Manager</h1>
+        <h1 class="text-2xl font-bold text-gray-900">Berikan Instruksi</h1>
         <p class="text-sm text-gray-500">Komplain {{ $complaint->id }} - {{ $complaint->category->name }}</p>
+        <p class="text-xs text-gray-400 mt-1">Manager memberikan instruksi, CS yang menyelesaikan dan memberikan feedback ke customer</p>
     </div>
 
     <!-- Form -->
@@ -37,15 +38,15 @@
                     <div class="flex items-start">
                         <i class="fas fa-info-circle text-yellow-600 mt-1 mr-3"></i>
                         <div class="text-sm text-yellow-800">
-                            <strong>Catatan:</strong> Manager menangani masalah internal, CS yang memberikan feedback ke customer.
+                            <strong>Catatan:</strong> Manager memberikan instruksi penanganan, CS yang melaksanakan dan memberikan feedback ke customer.
                         </div>
                     </div>
                 </div>
 
-                <!-- Pilih Tindakan -->
+                <!-- Pilih Instruksi -->
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-4">
-                        Pilih Tindakan <span class="text-red-500">*</span>
+                        Pilih Instruksi <span class="text-red-500">*</span>
                     </label>
                     <div class="space-y-3">
                         <label class="flex items-start p-4 border-2 border-gray-300 rounded-lg hover:bg-purple-50 hover:border-purple-300 cursor-pointer transition-all">
@@ -92,8 +93,8 @@
                         Batal
                     </a>
                     <button type="submit" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
-                        <i class="fas fa-cogs mr-2"></i>
-                        Simpan Tindakan
+                        <i class="fas fa-clipboard-check mr-2"></i>
+                        Kirim Instruksi
                     </button>
                 </div>
             </form>

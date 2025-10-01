@@ -49,13 +49,23 @@
 
             <!-- Description -->
             <div>
-                <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Detail Komplain</label>
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                    Detail Komplain 
+                    <span class="text-xs text-gray-500">(Maksimal 200 karakter)</span>
+                </label>
                 <textarea name="description" id="description" rows="4" required
+                          maxlength="200"
                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('description') border-red-300 @enderror"
-                          placeholder="Jelaskan detail keluhan atau masalah Anda...">{{ old('description') }}</textarea>
-                @error('description')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
+                          placeholder="Jelaskan masalah Anda secara singkat dan jelas (maksimal 200 karakter)..."
+                          oninput="updateCharCount(this)">{{ old('description') }}</textarea>
+                <div class="flex justify-between items-center mt-1">
+                    <div>
+                        @error('description')
+                            <p class="text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <span id="charCount" class="text-xs text-gray-500">0/200</span>
+                </div>
             </div>
 
             <!-- Submit Button -->
@@ -70,4 +80,31 @@
         </form>
     </div>
 </div>
+
+<script>
+function updateCharCount(textarea) {
+    const charCount = document.getElementById('charCount');
+    const currentLength = textarea.value.length;
+    const maxLength = 200;
+    
+    charCount.textContent = `${currentLength}/${maxLength}`;
+    
+    // Change color based on character count
+    if (currentLength > maxLength * 0.9) {
+        charCount.className = 'text-xs text-red-500';
+    } else if (currentLength > maxLength * 0.7) {
+        charCount.className = 'text-xs text-yellow-500';
+    } else {
+        charCount.className = 'text-xs text-gray-500';
+    }
+}
+
+// Initialize character count on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.getElementById('description');
+    if (textarea) {
+        updateCharCount(textarea);
+    }
+});
+</script>
 @endsection

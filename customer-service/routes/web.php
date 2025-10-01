@@ -53,10 +53,19 @@ Route::middleware('auth')->group(function () {
     
     
     // Admin Routes - Full system management
-    Route::middleware(['role:admin,manager'])->group(function () {
+    Route::middleware(['role:admin'])->group(function () {
         Route::get('admin/dashboard', [DashboardController::class, 'adminDashboard'])->name('admin.dashboard');
         Route::resource('users', UserController::class);
         Route::patch('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+    });
+    
+    // Manager Routes - Limited user management (view and edit only, no create/delete)
+    Route::middleware(['role:manager'])->group(function () {
+        Route::get('users-management', [UserController::class, 'index'])->name('manager.users.index');
+        Route::get('users-management/{user}', [UserController::class, 'show'])->name('manager.users.show');
+        Route::get('users-management/{user}/edit', [UserController::class, 'edit'])->name('manager.users.edit');
+        Route::patch('users-management/{user}', [UserController::class, 'update'])->name('manager.users.update');
+        Route::patch('users-management/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('manager.users.toggle-status');
     });
     
     
@@ -99,12 +108,13 @@ Route::middleware('auth')->group(function () {
         Route::get('complaints/{complaint}', [ComplaintController::class, 'show'])->name('complaints.show');
     });
     
-    
     // Manager Routes - Only managers can access these
     Route::middleware(['role:manager'])->group(function () {
         Route::get('manager/dashboard', [DashboardController::class, 'managerDashboard'])->name('manager.dashboard');
-        Route::get('complaints/{complaint}/manager-action', [ComplaintController::class, 'managerActionForm'])->name('complaints.manager-action-form');
+        Route::get('complaints/{complaint}/manager-action-form', [ComplaintController::class, 'managerActionForm'])->name('complaints.manager-action-form');
         Route::patch('complaints/{complaint}/manager-action', [ComplaintController::class, 'managerAction'])->name('complaints.manager-action');
+        Route::patch('complaints/{complaint}/claim-escalation', [ComplaintController::class, 'claimEscalation'])->name('complaints.claim-escalation');
+        Route::patch('complaints/{complaint}/release-escalation', [ComplaintController::class, 'releaseEscalation'])->name('complaints.release-escalation');
     });
     
     // Analytics redirect - accessible by manager and admin

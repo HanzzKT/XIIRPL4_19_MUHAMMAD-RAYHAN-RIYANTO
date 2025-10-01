@@ -8,8 +8,8 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-display font-semibold text-[#171717] tracking-tight">Manager Dashboard</h1>
-            <p class="text-[#71717a] mt-1">Welcome back, {{ auth()->user()->name }}!</p>
+            <h1 class="text-3xl font-display font-semibold text-[#171717] tracking-tight">Dashboard Manager</h1>
+            <p class="text-[#71717a] mt-1">Selamat datang kembali, {{ auth()->user()->name }}!</p>
         </div>
         <div class="hidden md:flex items-center">
             <div id="realTimeClock" class="vercel-card px-4 py-2 text-sm">
@@ -26,7 +26,7 @@
         <div class="vercel-card group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-[#71717a] mb-1">Total Escalations</p>
+                    <p class="text-sm text-[#71717a] mb-1">Total Eskalasi</p>
                     <p class="text-2xl font-display font-semibold text-[#ef4444]">{{ $stats['totalEscalations'] }}</p>
                 </div>
                 <div class="w-10 h-10 bg-[#fef2f2] rounded-lg flex items-center justify-center group-hover:bg-[#fee2e2] transition-colors">
@@ -40,7 +40,7 @@
         <div class="vercel-card group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-[#71717a] mb-1">Completed</p>
+                    <p class="text-sm text-[#71717a] mb-1">Selesai</p>
                     <p class="text-2xl font-display font-semibold text-[#22c55e]">{{ $stats['completedEscalations'] }}</p>
                 </div>
                 <div class="w-10 h-10 bg-[#f0fdf4] rounded-lg flex items-center justify-center group-hover:bg-[#dcfce7] transition-colors">
@@ -54,8 +54,8 @@
         <div class="vercel-card group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-[#71717a] mb-1">Completion Rate</p>
-                    <p class="text-2xl font-display font-semibold text-[#171717]">{{ number_format($stats['escalationCompletionRate'], 1) }}%</p>
+                    <p class="text-sm text-[#71717a] mb-1">Skor Penyelesaian</p>
+                    <p class="text-2xl font-display font-semibold text-[#171717]">{{ number_format($stats['escalationCompletionRate'], 1) }}</p>
                 </div>
                 <div class="w-10 h-10 bg-[#f4f4f5] rounded-lg flex items-center justify-center group-hover:bg-[#e4e4e7] transition-colors">
                     <svg class="w-5 h-5 text-[#71717a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,12 +97,12 @@
                                 <i class="fas fa-percentage text-xs text-green-600"></i>
                             </div>
                             <div class="ml-3">
-                                <h3 class="font-medium text-sm text-gray-900">Tingkat Penyelesaian</h3>
+                                <h3 class="font-medium text-sm text-gray-900">Rasio Penyelesaian</h3>
                                 <p class="text-xs text-gray-600">Komplain yang diselesaikan</p>
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-lg font-bold text-green-600">{{ $stats['escalationCompletionRate'] }}%</p>
+                            <p class="text-lg font-bold text-green-600">{{ number_format($stats['escalationCompletionRate'], 1) }}</p>
                             <p class="text-xs text-gray-600">dari total</p>
                         </div>
                     </div>
@@ -130,7 +130,7 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200">
             <div class="p-4 border-b border-gray-200">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-gray-900">Komplain Terbaru</h2>
+                    <h2 class="text-lg font-semibold text-gray-900">Komplain Baru</h2>
                     <a href="{{ route('complaints.index') }}" class="text-purple-600 hover:text-purple-700 font-medium text-sm transition-colors duration-200">
                         Lihat Semua
                     </a>
@@ -142,34 +142,35 @@
                         @foreach($recentComplaints as $complaint)
                         <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
                             <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-user text-xs text-purple-600"></i>
+                                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <span class="text-xs font-semibold text-purple-600">
+                                        {{ strtoupper(substr($complaint->customer->name, 0, 1)) }}{{ strtoupper(substr(explode(' ', $complaint->customer->name)[1] ?? '', 0, 1)) }}
+                                    </span>
                                 </div>
                                 <div>
                                     <h3 class="font-medium text-sm text-gray-900">{{ $complaint->customer->name }}</h3>
-                                    <p class="text-xs text-gray-600">{{ Str::limit($complaint->description, 40) }}</p>
                                     <p class="text-xs text-gray-500">{{ $complaint->created_at->format('d M Y, H:i') }}</p>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-2">
+                            <div class="flex items-center space-x-1">
                                 @if($complaint->escalation_to)
-                                    <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">DIESKALASI</span>
                                     @if($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action:'))
                                         @if(str_contains($complaint->action_notes, 'resolved'))
-                                            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Sudah Ditangani</span>
+                                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">🔺 Selesai</span>
                                         @else
-                                            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Dikembalikan ke CS</span>
+                                            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">🔺 Kembali</span>
                                         @endif
                                     @else
-                                        <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">Menunggu Tindakan</span>
+                                        <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">🔺 Tunggu</span>
                                     @endif
-                                @endif
-                                @if($complaint->status === 'baru')
-                                    <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">Baru</span>
-                                @elseif($complaint->status === 'diproses')
-                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">Diproses</span>
                                 @else
-                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Selesai</span>
+                                    @if($complaint->status === 'baru')
+                                        <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">Baru</span>
+                                    @elseif($complaint->status === 'diproses')
+                                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">Proses</span>
+                                    @else
+                                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Selesai</span>
+                                    @endif
                                 @endif
                                 <a href="{{ route('complaints.show', $complaint) }}" class="text-purple-600 hover:text-purple-700 transition-colors duration-200">
                                     <i class="fas fa-arrow-right text-xs"></i>
@@ -183,8 +184,8 @@
                         <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-3">
                             <i class="fas fa-inbox text-lg text-gray-400"></i>
                         </div>
-                        <h3 class="text-sm font-medium text-gray-900 mb-1">Belum ada eskalasi</h3>
-                        <p class="text-xs text-gray-600">Komplain yang dieskalasi akan ditampilkan di sini</p>
+                        <h3 class="text-sm font-medium text-gray-900 mb-1">Belum ada komplain baru</h3>
+                        <p class="text-xs text-gray-600">Komplain baru akan ditampilkan di sini</p>
                     </div>
                 @endif
             </div>

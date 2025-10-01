@@ -95,10 +95,6 @@ class User extends Authenticatable
         return $this->hasMany(Complaint::class, 'resolved_by');
     }
 
-    public function createdComplaints()
-    {
-        return $this->hasMany(Complaint::class, 'customer_id');
-    }
 
     public function customer()
     {

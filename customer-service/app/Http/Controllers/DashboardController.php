@@ -91,9 +91,9 @@ class DashboardController extends Controller
             'activeCS' => User::where('role', 'cs')->where('is_active', true)->count(),
         ];
         
-        // Recent escalated complaints for manager to monitor
+        // Recent new complaints for manager to monitor
         $recentComplaints = Complaint::with(['customer', 'category', 'handledBy'])
-            ->whereNotNull('escalation_to')
+            ->where('status', 'baru')
             ->latest()
             ->take(10)
             ->get();
@@ -119,16 +119,29 @@ class DashboardController extends Controller
         
         $stats = [
             'totalComplaints' => Complaint::count(),
-            'newComplaints' => Complaint::where('status', 'baru')->count(),
+            'newComplaints' => Complaint::where('status', 'baru')->whereNull('handled_by')->count(),
             'processingComplaints' => Complaint::where('status', 'diproses')->count(),
             'completedComplaints' => Complaint::where('status', 'selesai')->count(),
             'myHandledComplaints' => Complaint::where('handled_by', $user->id)->count(),
             'myResolvedComplaints' => Complaint::where('resolved_by', $user->id)->count(),
         ];
         
-        // Only show complaints without assigned CS
+        // CS hanya melihat:
+        // 1. Komplain baru yang belum diambil (untuk diambil)
+        // 2. Komplain yang sedang mereka tangani
         $recentComplaints = Complaint::with(['customer', 'category'])
-            ->whereNull('handled_by')
+            ->where(function($query) use ($user) {
+                $query->where(function($q) {
+                    // Komplain baru yang belum diambil siapa pun
+                    $q->where('status', 'baru')
+                      ->whereNull('handled_by');
+                })
+                ->orWhere(function($q) use ($user) {
+                    // Komplain yang sedang ditangani oleh CS ini
+                    $q->where('handled_by', $user->id)
+                      ->whereIn('status', ['diproses']);
+                });
+            })
             ->latest()
             ->take(10)
             ->get();

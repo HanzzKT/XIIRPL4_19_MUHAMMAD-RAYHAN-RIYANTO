@@ -11,8 +11,16 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
+        $currentUser = auth()->user();
+        
         // Admin can manage all users except customers
-        $query = User::whereIn('role', ['cs', 'manager', 'admin']);
+        // Manager can only view CS users
+        if ($currentUser->role === 'admin') {
+            $query = User::whereIn('role', ['cs', 'manager', 'admin']);
+        } else {
+            // Manager hanya bisa lihat CS
+            $query = User::where('role', 'cs');
+        }
         
         if ($request->filled('search')) {
             $search = $request->search;
@@ -33,11 +41,21 @@ class UserController extends Controller
     
     public function create()
     {
+        // Only admin can create new users
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Unauthorized. Only admin can create new users.');
+        }
+        
         return view('user-management.create');
     }
     
     public function store(Request $request)
     {
+        // Only admin can create new users
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Unauthorized. Only admin can create new users.');
+        }
+        
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
@@ -66,16 +84,33 @@ class UserController extends Controller
     
     public function edit(User $user)
     {
+        $currentUser = auth()->user();
+        
+        // Manager can only edit CS users
+        if ($currentUser->role === 'manager' && $user->role !== 'cs') {
+            abort(403, 'Unauthorized. Manager can only edit CS users.');
+        }
+        
         return view('user-management.edit', compact('user'));
     }
     
     public function update(Request $request, User $user)
     {
+        $currentUser = auth()->user();
+        
+        // Manager can only edit CS users
+        if ($currentUser->role === 'manager' && $user->role !== 'cs') {
+            abort(403, 'Unauthorized. Manager can only edit CS users.');
+        }
+        
+        // Manager cannot change role
+        $roleValidation = $currentUser->role === 'admin' ? 'required|in:cs,manager,admin' : 'required|in:cs';
+        
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8|confirmed',
-            'role' => 'required|in:cs,manager,admin',
+            'role' => $roleValidation,
             'is_active' => 'boolean',
         ]);
         

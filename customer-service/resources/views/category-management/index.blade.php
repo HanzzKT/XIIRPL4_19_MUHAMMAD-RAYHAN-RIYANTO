@@ -50,13 +50,11 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                             <a href="{{ route('complaint-categories.edit', $category) }}" class="text-indigo-600 hover:text-indigo-900 transition-colors duration-200">Edit</a>
-                            @if($category->complaints_count == 0)
                             <form method="POST" action="{{ route('complaint-categories.destroy', $category) }}" class="inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" onclick="return confirm('Yakin ingin menghapus kategori ini?')" class="text-red-600 hover:text-red-900 transition-colors duration-200">Hapus</button>
+                                <button type="submit" onclick="return confirm('{{ $category->complaints_count > 0 ? 'Kategori ini memiliki ' . $category->complaints_count . ' komplain. Yakin ingin menghapus?' : 'Yakin ingin menghapus kategori ini?' }}')" class="text-red-600 hover:text-red-900 transition-colors duration-200">Hapus</button>
                             </form>
-                            @endif
                         </td>
                     </tr>
                     @empty

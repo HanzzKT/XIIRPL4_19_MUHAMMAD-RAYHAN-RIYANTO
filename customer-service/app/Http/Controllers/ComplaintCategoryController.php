@@ -54,9 +54,30 @@ class ComplaintCategoryController extends Controller
     
     public function destroy(ComplaintCategory $complaintCategory)
     {
-        if ($complaintCategory->complaints()->count() > 0) {
+        $complaintsCount = $complaintCategory->complaints()->count();
+        
+        if ($complaintsCount > 0) {
+            // Pindahkan semua komplain ke kategori "Lainnya"
+            $defaultCategory = ComplaintCategory::where('name', 'Lainnya')->first();
+            
+            if (!$defaultCategory) {
+                // Buat kategori "Lainnya" jika belum ada
+                $defaultCategory = ComplaintCategory::create([
+                    'name' => 'Lainnya',
+                    'description' => 'Komplain lainnya yang tidak termasuk dalam kategori di atas',
+                    'is_active' => true
+                ]);
+            }
+            
+            // Update semua komplain ke kategori "Lainnya"
+            $complaintCategory->complaints()->update([
+                'complaint_category_id' => $defaultCategory->id
+            ]);
+            
+            $complaintCategory->delete();
+            
             return redirect()->route('complaint-categories.index')
-                ->with('error', 'Tidak dapat menghapus kategori yang memiliki komplain');
+                ->with('success', "Kategori berhasil dihapus. {$complaintsCount} komplain dipindahkan ke kategori 'Lainnya'");
         }
         
         $complaintCategory->delete();

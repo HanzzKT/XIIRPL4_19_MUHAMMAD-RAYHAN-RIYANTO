@@ -16,12 +16,10 @@ class ComplaintController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $query = Complaint::with(['customer', 'category', 'handledBy', 'resolvedBy']);
+        $query = Complaint::with(['customer.user', 'category', 'handledBy', 'resolvedBy', 'managerClaimedBy']);
         
-        // Manager only sees escalated complaints
-        if ($user->role === 'manager') {
-            $query->whereNotNull('escalation_to');
-        }
+        // All roles can see all complaints for monitoring
+        // CS, Manager, and Admin see all complaints
         
         // Filter by status
         if ($request->filled('status')) {
@@ -38,8 +36,8 @@ class ComplaintController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('description', 'like', "%{$search}%")
-                  ->orWhereHas('customer', function($customerQuery) use ($search) {
-                      $customerQuery->where('name', 'like', "%{$search}%");
+                  ->orWhereHas('customer.user', function($userQuery) use ($search) {
+                      $userQuery->where('name', 'like', "%{$search}%");
                   });
             });
         }
@@ -47,14 +45,27 @@ class ComplaintController extends Controller
         $complaints = $query->latest()->paginate(15);
         $categories = ComplaintCategory::active()->get();
         
-        return view('complaint-management.index', compact('complaints', 'categories'));
+        // Check if current CS has active complaints (not completed)
+        $csHasActiveComplaint = false;
+        if ($user->role === 'cs') {
+            $csHasActiveComplaint = Complaint::where('handled_by', $user->id)
+                ->whereIn('status', ['baru', 'diproses'])
+                ->exists();
+        }
+        
+        return view('complaint-management.index', compact('complaints', 'categories', 'csHasActiveComplaint'));
     }
 
     public function exportPdf(Request $request)
     {
-        $query = Complaint::with(['customer', 'category', 'handledBy', 'resolvedBy']);
+        $query = Complaint::with(['customer.user', 'category', 'handledBy', 'resolvedBy', 'managerClaimedBy']);
         
-        // All roles can see all complaints
+        // Different logic for Manager vs CS
+        if (auth()->user()->role === 'cs') {
+            // CS hanya melihat komplain yang mereka tangani
+            $query->where('handled_by', auth()->id());
+        }
+        // Manager dan Admin melihat semua komplain
         
         // Apply filters
         if ($request->filled('start_date')) {
@@ -73,20 +84,27 @@ class ComplaintController extends Controller
             $query->where('complaint_category_id', $request->category);
         }
         
+        // Filter by CS Handler (for Manager/Admin reports) - search by name
+        if ($request->filled('cs_search') && $request->cs_search !== '' && $request->cs_search !== null) {
+            $query->whereHas('handledBy', function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->cs_search . '%');
+            });
+        }
+        
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('description', 'like', "%{$search}%")
-                  ->orWhereHas('customer', function($customerQuery) use ($search) {
-                      $customerQuery->where('name', 'like', "%{$search}%");
+                  ->orWhereHas('customer.user', function($userQuery) use ($search) {
+                      $userQuery->where('name', 'like', "%{$search}%");
                   });
             });
         }
         
         $complaints = $query->orderBy('created_at', 'desc')->get();
         
-        // Generate filename
-        $filename = 'laporan-komplain-' . date('Y-m-d-H-i-s') . '.pdf';
+        // Generate dynamic filename based on filters
+        $filename = $this->generatePdfFilename($request);
         
         // Generate PDF using DOMPDF
         $pdf = Pdf::loadView('complaint-management.pdf', compact('complaints', 'request'))
@@ -129,7 +147,7 @@ class ComplaintController extends Controller
     {
         $request->validate([
             'complaint_category_id' => 'required|exists:complaint_categories,id',
-            'description' => 'required|string',
+            'description' => 'required|string|max:200',
         ]);
 
         // Get authenticated user
@@ -142,7 +160,6 @@ class ComplaintController extends Controller
                 'user_id' => $user->id,
                 'phone' => $user->phone ?? '0000000000', // Default phone if not set
                 'address' => $user->address ?? 'Alamat belum diisi', // Default address if not set
-                'created_by' => $user->id, // Customer created their own profile
             ]);
         } else {
             // Update customer data if user has phone/address
@@ -181,7 +198,7 @@ class ComplaintController extends Controller
     
     public function edit(Complaint $complaint)
     {
-        $customers = Customer::orderBy('name')->get();
+        $customers = Customer::with('user')->get()->sortBy('user.name');
         $categories = ComplaintCategory::active()->get();
         
         return view('complaint-management.edit', compact('complaint', 'customers', 'categories'));
@@ -192,7 +209,7 @@ class ComplaintController extends Controller
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'complaint_category_id' => 'required|exists:complaint_categories,id',
-            'description' => 'required|string',
+            'description' => 'required|string|max:200',
             'status' => 'required|in:baru,diproses,selesai',
             'action_notes' => 'nullable|string',
         ]);
@@ -205,37 +222,7 @@ class ComplaintController extends Controller
         
         $complaint->update($validated);
         
-        return redirect()->route('complaints.index')
-            ->with('success', 'Komplain berhasil diperbarui');
-    }
-    
-    public function updateStatus(Request $request, Complaint $complaint)
-    {
-        $validated = $request->validate([
-            'status' => 'required|in:baru,diproses,selesai',
-            'action_notes' => 'nullable|string',
-        ]);
-
-        $updateData = [
-            'status' => $validated['status'],
-            'handled_by' => auth()->id(),
-        ];
-
-        // Only add action_notes if it exists in the request
-        if ($request->has('action_notes')) {
-            $updateData['action_notes'] = $validated['action_notes'];
-        }
-
-        $complaint->update($updateData);
-
-        if ($validated['status'] === 'selesai') {
-            $complaint->update([
-                'resolved_at' => now(),
-                'resolved_by' => auth()->id(),
-            ]);
-        }
-
-        return redirect()->back()->with('success', 'Status komplain berhasil diperbarui');
+        return redirect()->route('complaints.index')->with('success', 'Komplain berhasil diupdate statusnya.');
     }
 
 
@@ -267,6 +254,19 @@ class ComplaintController extends Controller
         if ($complaint->handled_by) {
             return redirect()->back()
                 ->with('error', 'Komplain sudah diambil oleh CS lain');
+        }
+
+        // Check if current CS already has active complaints
+        $currentUser = auth()->user();
+        if ($currentUser->role === 'cs') {
+            $hasActiveComplaint = Complaint::where('handled_by', $currentUser->id)
+                ->whereIn('status', ['baru', 'diproses'])
+                ->exists();
+                
+            if ($hasActiveComplaint) {
+                return redirect()->back()
+                    ->with('error', 'Anda masih memiliki komplain yang belum selesai. Selesaikan komplain tersebut terlebih dahulu sebelum mengambil komplain baru.');
+            }
         }
 
         // Take the complaint and change status to 'diproses'
@@ -395,6 +395,137 @@ class ComplaintController extends Controller
         
         return redirect()->route('complaints.index')
             ->with('success', 'Komplain berhasil dihapus');
+    }
+    
+    /**
+     * Generate dynamic PDF filename based on filters and date
+     */
+    private function generatePdfFilename($request)
+    {
+        $baseFilename = 'Laporan-Komplain';
+        
+        // Add date range to filename if specified
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $startDate = date('d-m-Y', strtotime($request->start_date));
+            $endDate = date('d-m-Y', strtotime($request->end_date));
+            $baseFilename .= "_{$startDate}_sampai_{$endDate}";
+        } elseif ($request->filled('start_date')) {
+            $startDate = date('d-m-Y', strtotime($request->start_date));
+            $baseFilename .= "_dari_{$startDate}";
+        } elseif ($request->filled('end_date')) {
+            $endDate = date('d-m-Y', strtotime($request->end_date));
+            $baseFilename .= "_sampai_{$endDate}";
+        } else {
+            // If no date filter, use current date
+            $currentDate = date('d-m-Y');
+            $baseFilename .= "_{$currentDate}";
+        }
+        
+        // Add status filter to filename if specified
+        if ($request->filled('status') && $request->status !== '') {
+            $statusName = ucfirst($request->status);
+            $baseFilename .= "_{$statusName}";
+        }
+        
+        // Add category filter to filename if specified
+        if ($request->filled('category') && $request->category !== '') {
+            $category = \App\Models\ComplaintCategory::find($request->category);
+            if ($category) {
+                $categoryName = str_replace(' ', '-', $category->name);
+                $baseFilename .= "_{$categoryName}";
+            }
+        }
+        
+        // Add CS search filter to filename if specified
+        if ($request->filled('cs_search') && $request->cs_search !== '') {
+            $csSearch = str_replace(' ', '-', $request->cs_search);
+            $baseFilename .= "_CS-{$csSearch}";
+        }
+        
+        // Add timestamp to make it unique
+        $timestamp = date('H-i-s');
+        $baseFilename .= "_{$timestamp}";
+        
+        // Check if file exists and add counter if needed
+        $counter = 1;
+        $finalFilename = $baseFilename . '.pdf';
+        $downloadPath = public_path('downloads');
+        
+        // Create downloads directory if it doesn't exist
+        if (!file_exists($downloadPath)) {
+            mkdir($downloadPath, 0755, true);
+        }
+        
+        // Check for existing files and increment counter
+        while (file_exists($downloadPath . '/' . $finalFilename)) {
+            $finalFilename = $baseFilename . "({$counter}).pdf";
+            $counter++;
+        }
+        
+        return $finalFilename;
+    }
+
+    public function claimEscalation(Complaint $complaint)
+    {
+        // Hanya manager yang bisa claim
+        if (auth()->user()->role !== 'manager') {
+            abort(403, 'Hanya manager yang dapat mengambil eskalasi.');
+        }
+
+        // Pastikan komplain sudah dieskalasi
+        if (!$complaint->escalation_to) {
+            return redirect()->back()->with('error', 'Komplain ini belum dieskalasi.');
+        }
+
+        // Pastikan belum diclaim manager lain
+        if ($complaint->manager_claimed_by) {
+            return redirect()->back()->with('error', 'Eskalasi ini sudah diambil oleh ' . $complaint->managerClaimedBy->name);
+        }
+
+        // Claim eskalasi
+        $complaint->update([
+            'manager_claimed_by' => auth()->id(),
+            'manager_claimed_at' => now(),
+        ]);
+
+        return redirect()->back()->with('success', 'Eskalasi berhasil diambil. Anda sekarang menangani komplain ini.');
+    }
+
+    public function releaseEscalation(Complaint $complaint)
+    {
+        // Hanya manager yang mengclaim yang bisa release
+        if ($complaint->manager_claimed_by !== auth()->id()) {
+            return redirect()->back()->with('error', 'Anda tidak dapat melepas eskalasi yang bukan Anda ambil.');
+        }
+
+        // Release claim
+        $complaint->update([
+            'manager_claimed_by' => null,
+            'manager_claimed_at' => null,
+        ]);
+
+        return redirect()->back()->with('success', 'Eskalasi berhasil dilepas dan dapat diambil manager lain.');
+    }
+
+    public function updateStatus(Request $request, Complaint $complaint)
+    {
+        $request->validate([
+            'status' => 'required|in:baru,diproses,selesai'
+        ]);
+
+        $updateData = [
+            'status' => $request->status,
+        ];
+
+        // If status is changed to 'selesai', record resolution
+        if ($request->status === 'selesai' && $complaint->status !== 'selesai') {
+            $updateData['resolved_at'] = now();
+            $updateData['resolved_by'] = auth()->id();
+        }
+
+        $complaint->update($updateData);
+
+        return redirect()->back()->with('success', 'Status komplain berhasil diperbarui.');
     }
     
 }

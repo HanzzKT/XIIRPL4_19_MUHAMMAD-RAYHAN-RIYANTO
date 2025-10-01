@@ -15,7 +15,6 @@ class Customer extends Model
         'user_id',
         'phone',
         'address',
-        'created_by',
     ];
 
     public function user(): BelongsTo
@@ -23,10 +22,6 @@ class Customer extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function createdBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
 
     public function complaints(): HasMany
     {

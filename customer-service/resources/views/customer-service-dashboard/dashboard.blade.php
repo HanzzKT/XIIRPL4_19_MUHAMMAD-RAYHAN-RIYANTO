@@ -8,8 +8,8 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-display font-semibold text-[#171717] tracking-tight">CS Dashboard</h1>
-            <p class="text-[#71717a] mt-1">Hello, {{ auth()->user()->name }}!</p>
+            <h1 class="text-3xl font-display font-semibold text-[#171717] tracking-tight">Dashboard CS</h1>
+            <p class="text-[#71717a] mt-1">Selamat datang kembali, {{ auth()->user()->name }}!</p>
         </div>
         <div class="hidden md:flex items-center">
             <div id="realTimeClock" class="vercel-card px-4 py-2 text-sm">
@@ -26,7 +26,7 @@
     <!-- Statistics Chart -->
     <div class="vercel-card">
         <div class="flex items-center justify-between mb-6">
-            <h3 class="text-xl font-display font-semibold text-[#171717]">Complaint Summary</h3>
+            <h3 class="text-xl font-display font-semibold text-[#171717]">Ringkasan Komplain</h3>
         </div>
         <div class="relative">
             <canvas id="csStatsChart" class="w-full" style="max-height: 280px"></canvas>
@@ -77,9 +77,10 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <div class="p-4 border-b border-gray-200">
             <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-gray-900">Komplain Terbaru</h2>
+                <h2 class="text-lg font-semibold text-gray-900">Komplain untuk Anda</h2>
                 <a href="{{ route('complaints.index') }}" class="text-purple-600 hover:text-purple-700 font-medium text-sm">Lihat Semua</a>
             </div>
+            <p class="text-xs text-gray-600 mt-1">Komplain baru yang bisa diambil & komplain yang sedang Anda tangani</p>
         </div>
         <div class="p-2">
             @if($recentComplaints->count() > 0)
@@ -102,13 +103,17 @@
                             </div>
                             <div class="flex items-center gap-2 shrink-0">
                                 <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">{{ $complaint->category->name ?? 'Umum' }}</span>
-                                @php($dot = match($complaint->status){ 'baru'=>'bg-red-500', 'diproses'=>'bg-yellow-500', 'selesai'=>'bg-green-500', default=>'bg-gray-400' })
-                                <span class="inline-flex items-center gap-1 text-xs">
-                                    <span class="w-2 h-2 rounded-full {{ $dot }}"></span>
-                                    <span class="capitalize text-gray-700">{{ $complaint->status }}</span>
-                                </span>
-                                @if($complaint->status === 'baru')
-                                <button onclick="takeComplaint({{ $complaint->id }})" class="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">Ambil</button>
+                                @if($complaint->status === 'baru' && !$complaint->handled_by)
+                                    <span class="inline-flex items-center gap-1 text-xs">
+                                        <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                                        <span class="text-red-700 font-medium">baru</span>
+                                    </span>
+                                    <button onclick="takeComplaint({{ $complaint->id }})" class="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">Ambil</button>
+                                @elseif($complaint->status === 'diproses' && $complaint->handled_by === auth()->id())
+                                    <span class="inline-flex items-center gap-1 text-xs">
+                                        <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
+                                        <span class="text-yellow-700 font-medium">sedang saya tangani</span>
+                                    </span>
                                 @endif
                             </div>
                         </div>

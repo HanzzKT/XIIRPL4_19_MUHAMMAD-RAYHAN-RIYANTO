@@ -16,14 +16,6 @@ class RoleMiddleware
 
         $userRole = auth()->user()->role;
         
-        // Debug: Log the user role and required roles
-        \Log::info('RoleMiddleware Debug', [
-            'user_role' => $userRole,
-            'required_roles' => $roles,
-            'user_id' => auth()->id(),
-            'route' => $request->route()->getName()
-        ]);
-        
         if (in_array($userRole, $roles)) {
             return $next($request);
         }
