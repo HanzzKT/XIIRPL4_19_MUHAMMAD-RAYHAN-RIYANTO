@@ -40,6 +40,8 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'phone' => $request->phone,
+            'address' => $request->address,
             'role' => 'customer',
         ]);
 
@@ -53,8 +55,7 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        Auth::login($user);
-
-        return redirect(route('dashboard'));
+        return redirect()->route('login')
+            ->with('success', 'Akun berhasil dibuat! Silakan login dengan email dan password Anda.');
     }
 }

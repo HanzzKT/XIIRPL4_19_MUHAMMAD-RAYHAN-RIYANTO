@@ -221,6 +221,14 @@
                                                 <a href="{{ route('complaints.escalate-form', $complaint) }}" class="text-white bg-red-600 hover:bg-red-700 transition-colors duration-200 px-3 py-1 rounded text-xs inline-flex items-center">
                                                     <i class="fas fa-exclamation-triangle mr-1"></i>Eskalasi
                                                 </a>
+                                                @if($complaint->handled_by === auth()->id() && auth()->user()->role === 'cs')
+                                                    <form method="POST" action="{{ route('complaints.release', $complaint) }}" class="inline-block">
+                                                        @csrf
+                                                        <button type="submit" class="text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-200 px-3 py-1 rounded text-xs inline-flex items-center" onclick="return confirm('Kembalikan komplain ini agar bisa diambil CS lain?')">
+                                                            <i class="fas fa-undo mr-1"></i>Kembalikan
+                                                        </button>
+                                                    </form>
+                                                @endif
                                             @else
                                                 <!-- CS lain hanya bisa lihat, tidak bisa action -->
                                                 <span class="text-gray-500 text-xs">Ditangani {{ $complaint->handledBy->name ?? 'CS lain' }}</span>

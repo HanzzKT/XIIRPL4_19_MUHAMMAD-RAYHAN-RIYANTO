@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class ComplaintController extends Controller
@@ -265,7 +266,7 @@ class ComplaintController extends Controller
                 
             if ($hasActiveComplaint) {
                 return redirect()->back()
-                    ->with('error', 'Anda masih memiliki komplain yang belum selesai. Selesaikan komplain tersebut terlebih dahulu sebelum mengambil komplain baru.');
+                    ->with('error', 'Anda masih memiliki komplain yang belum selesai. Selesaikan atau kembalikan komplain tersebut terlebih dahulu sebelum mengambil komplain baru.');
             }
         }
 
@@ -277,6 +278,32 @@ class ComplaintController extends Controller
 
         return redirect()->back()
             ->with('success', 'Komplain berhasil diambil dan status diubah ke diproses');
+    }
+
+    public function releaseComplaint(Complaint $complaint)
+    {
+        // Check if complaint is handled by current CS
+        if ($complaint->handled_by !== auth()->id()) {
+            return redirect()->back()
+                ->with('error', 'Anda tidak dapat mengembalikan komplain yang bukan Anda tangani');
+        }
+
+        // Check if complaint is not escalated
+        if ($complaint->escalation_to) {
+            return redirect()->back()
+                ->with('error', 'Komplain yang sudah dieskalasi tidak dapat dikembalikan');
+        }
+
+        // Release the complaint back to 'baru' status
+        $complaint->update([
+            'handled_by' => null,
+            'status' => 'baru',
+            'cs_response' => null,
+            'cs_response_updated_at' => null
+        ]);
+
+        return redirect()->back()
+            ->with('success', 'Komplain berhasil dikembalikan dan dapat diambil oleh CS lain');
     }
 
     public function updateResponse(Request $request, Complaint $complaint)

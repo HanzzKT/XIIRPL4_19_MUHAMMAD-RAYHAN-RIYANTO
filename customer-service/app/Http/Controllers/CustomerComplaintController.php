@@ -46,48 +46,27 @@ class CustomerComplaintController extends Controller
         ]);
     }
 
-    public function delete(Request $request, Complaint $complaint)
+    public function destroy(Complaint $complaint)
     {
-        try {
-            // Verify this complaint belongs to the current customer
-            $customer = Customer::where('user_id', Auth::id())->first();
-            
-            if (!$customer) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Customer data tidak ditemukan'
-                ], 404);
-            }
-            
-            if ($complaint->customer_id !== $customer->id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Anda tidak memiliki akses untuk menghapus komplain ini'
-                ], 403);
-            }
-
-            // Check if complaint can be deleted (only 'baru' or 'selesai' status)
-            if (!in_array($complaint->status, ['baru', 'selesai'])) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Komplain yang sedang diproses tidak dapat dihapus'
-                ], 400);
-            }
-
-            // Delete the complaint
-            $complaint->delete();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Komplain berhasil dihapus'
-            ]);
-            
-        } catch (\Exception $e) {
-            \Log::error('Error deleting complaint: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat menghapus komplain: ' . $e->getMessage()
-            ], 500);
+        // Verify this complaint belongs to the current customer
+        $customer = Customer::where('user_id', Auth::id())->first();
+        
+        if (!$customer) {
+            return redirect()->back()->with('error', 'Customer data tidak ditemukan');
         }
+        
+        if ($complaint->customer_id !== $customer->id) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk menghapus komplain ini');
+        }
+
+        // Check if complaint can be deleted (only 'baru' or 'selesai' status)
+        if (!in_array($complaint->status, ['baru', 'selesai'])) {
+            return redirect()->back()->with('error', 'Komplain yang sedang diproses tidak dapat dihapus');
+        }
+
+        // Delete the complaint
+        $complaint->delete();
+
+        return redirect()->back()->with('success', 'Komplain berhasil dihapus');
     }
 }

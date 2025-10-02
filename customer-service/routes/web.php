@@ -48,7 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware(['role:customer'])->group(function () {
         Route::get('/customer/complaints', [\App\Http\Controllers\CustomerComplaintController::class, 'index'])->name('customer.complaints');
         Route::post('/customer/complaints/{complaint}/mark-read', [\App\Http\Controllers\CustomerComplaintController::class, 'markAsRead'])->name('customer.complaints.mark-read');
-        Route::delete('/customer/complaints/{complaint}', [\App\Http\Controllers\CustomerComplaintController::class, 'delete'])->name('customer.complaints.delete');
+        Route::delete('/customer/complaints/{complaint}', [\App\Http\Controllers\CustomerComplaintController::class, 'destroy'])->name('customer.complaints.destroy');
     });
     
     
@@ -77,6 +77,7 @@ Route::middleware('auth')->group(function () {
         Route::patch('complaints/{complaint}', [ComplaintController::class, 'update'])->name('complaints.update');
         Route::patch('complaints/{complaint}/response', [ComplaintController::class, 'updateResponse'])->name('complaints.update-response');
         Route::post('complaints/{complaint}/take', [ComplaintController::class, 'takeComplaint'])->name('complaints.take');
+        Route::post('complaints/{complaint}/release', [ComplaintController::class, 'releaseComplaint'])->name('complaints.release');
         Route::get('complaints/{complaint}/escalate', [ComplaintController::class, 'escalateForm'])->name('complaints.escalate-form');
         Route::post('complaints/{complaint}/escalate', [ComplaintController::class, 'escalateToManager'])->name('complaints.escalate');
         Route::delete('complaints/{complaint}', [ComplaintController::class, 'destroy'])->name('complaints.destroy');

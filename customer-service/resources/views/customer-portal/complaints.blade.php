@@ -273,17 +273,6 @@
                 // Save to localStorage for persistence
                 localStorage.setItem(`complaint_${complaintId}_read`, 'true');
                 
-                // Optional: Still call server for persistence (but don't wait for response)
-                fetch(`/customer/complaints/${complaintId}/mark-read`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Content-Type': 'application/json',
-                    }
-                }).catch(error => {
-                    console.log('Server update failed, but UI already updated:', error);
-                });
-                
                 // Show success message
                 alert('Feedback berhasil ditandai sebagai sudah dibaca');
             }

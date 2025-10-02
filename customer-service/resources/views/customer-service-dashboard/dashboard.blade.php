@@ -108,12 +108,27 @@
                                         <span class="w-2 h-2 rounded-full bg-red-500"></span>
                                         <span class="text-red-700 font-medium">baru</span>
                                     </span>
-                                    <button onclick="takeComplaint({{ $complaint->id }})" class="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">Ambil</button>
+                                    <form action="{{ route('complaints.take', $complaint) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit" onclick="return confirm('Apakah Anda yakin ingin mengambil komplain ini?')" 
+                                                class="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">
+                                            Ambil
+                                        </button>
+                                    </form>
                                 @elseif($complaint->status === 'diproses' && $complaint->handled_by === auth()->id())
-                                    <span class="inline-flex items-center gap-1 text-xs">
+                                    <span class="inline-flex items-center gap-1 text-xs mr-2">
                                         <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
                                         <span class="text-yellow-700 font-medium">sedang saya tangani</span>
                                     </span>
+                                    @if(!$complaint->escalation_to)
+                                        <form action="{{ route('complaints.release', $complaint) }}" method="POST" class="inline">
+                                            @csrf
+                                            <button type="submit" onclick="return confirm('Kembalikan komplain ini agar bisa diambil CS lain?')" 
+                                                    class="px-2 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600">
+                                                Kembalikan
+                                            </button>
+                                        </form>
+                                    @endif
                                 @endif
                             </div>
                         </div>
@@ -138,52 +153,6 @@
 </div>
 
 <script>
-// Take complaint
-function takeComplaint(complaintId) {
-    if (confirm('Apakah Anda yakin ingin mengambil komplain ini?')) {
-        fetch(`/complaints/${complaintId}/take`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showNotification('Komplain berhasil diambil!', 'success');
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                showNotification('Gagal mengambil komplain: ' + data.message, 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('Terjadi kesalahan', 'error');
-        });
-    }
-}
-
-// Show notification
-function showNotification(message, type) {
-    const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
-    notification.textContent = message;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.classList.remove('translate-x-full');
-    }, 100);
-    
-    setTimeout(() => {
-        notification.classList.add('translate-x-full');
-        setTimeout(() => {
-            document.body.removeChild(notification);
-        }, 300);
-    }, 3000);
-}
-
 // Real-time clock function
 function updateRealTimeClock() {
     const now = new Date();

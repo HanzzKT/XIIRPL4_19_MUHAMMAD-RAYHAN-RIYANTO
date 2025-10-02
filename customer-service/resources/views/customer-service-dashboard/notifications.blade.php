@@ -100,10 +100,13 @@
                         </a>
                         
                         @if($complaint->status === 'baru')
-                        <button onclick="takeComplaint({{ $complaint->id }})" 
-                                class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs transition-colors duration-200">
-                            Ambil Komplain
-                        </button>
+                        <form action="{{ route('complaints.take', $complaint) }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" onclick="return confirm('Apakah Anda yakin ingin mengambil komplain ini?')"
+                                    class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs transition-colors duration-200">
+                                Ambil Komplain
+                            </button>
+                        </form>
                         @endif
                         
                         <button onclick="sendWhatsAppReply({{ $complaint->id }}, '{{ $complaint->customer_phone }}')" 
@@ -142,7 +145,8 @@
             <div class="p-6 border-b border-gray-100">
                 <h3 class="text-lg font-semibold text-gray-900">Kirim Pesan WhatsApp</h3>
             </div>
-            <form id="whatsappReplyForm">
+            <form id="whatsappReplyForm" action="/whatsapp/send-reply" method="POST">
+                @csrf
                 <div class="p-6">
                     <input type="hidden" id="complaintId" name="complaint_id">
                     <input type="hidden" id="phoneNumber" name="phone_number">
@@ -211,60 +215,9 @@ function closeWhatsAppModal() {
     document.getElementById('whatsappReplyForm').reset();
 }
 
-// Handle form submission
-document.getElementById('whatsappReplyForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    
-    fetch('/api/whatsapp/send-reply', {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Pesan berhasil dikirim!');
-            closeWhatsAppModal();
-            refreshNotifications();
-        } else {
-            alert('Gagal mengirim pesan: ' + data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Terjadi kesalahan saat mengirim pesan');
-    });
-});
+// Form WhatsApp sekarang menggunakan submit Laravel biasa - tidak ada AJAX
 
-// Take complaint
-function takeComplaint(complaintId) {
-    if (confirm('Apakah Anda yakin ingin mengambil komplain ini?')) {
-        fetch(`/complaints/${complaintId}/take`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Komplain berhasil diambil!');
-                refreshNotifications();
-            } else {
-                alert('Gagal mengambil komplain: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Terjadi kesalahan');
-        });
-    }
-}
+// Fungsi untuk animasi saja - tidak ada AJAX
 
 // Refresh notifications
 function refreshNotifications() {

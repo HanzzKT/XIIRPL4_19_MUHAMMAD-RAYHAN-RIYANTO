@@ -42,6 +42,18 @@
                 </div>
                 @endif
 
+                <!-- Show success message if redirected from registration -->
+                @if(session('success'))
+                <div class="mb-6 p-4 rounded-lg bg-[#f0fdf4] border border-[#22c55e]/20">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 text-[#22c55e] mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p class="text-sm text-[#22c55e]">{{ session('success') }}</p>
+                    </div>
+                </div>
+                @endif
+
                 <form class="space-y-5" action="{{ route('login') }}" method="POST">
                     @csrf
 
