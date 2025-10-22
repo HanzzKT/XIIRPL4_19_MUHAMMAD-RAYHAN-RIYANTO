@@ -102,8 +102,16 @@
                                 {{ ucfirst($complaint->status) }}
                             </span>
                             @if($complaint->escalation_to)
-                                @if($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action:'))
-                                    @if(str_contains($complaint->action_notes, 'resolved'))
+                                @php
+                                    // Cek action notes terbaru (setelah || terakhir jika ada)
+                                    $latestActionNotes = $complaint->action_notes;
+                                    if ($latestActionNotes && str_contains($latestActionNotes, ' || ')) {
+                                        $allActions = explode(' || ', $latestActionNotes);
+                                        $latestActionNotes = end($allActions);
+                                    }
+                                @endphp
+                                @if($latestActionNotes && str_contains($latestActionNotes, 'Manager Action:'))
+                                    @if(str_contains($latestActionNotes, 'resolved'))
                                         <span class="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
                                             <i class="fas fa-check-circle mr-1"></i>MANAGER SELESAI
                                         </span>
@@ -113,9 +121,15 @@
                                         </span>
                                     @endif
                                 @else
-                                    <span class="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-800">
-                                        <i class="fas fa-clock mr-1"></i>MENUNGGU MANAGER
-                                    </span>
+                                    @if($complaint->manager_claimed_by)
+                                        <span class="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
+                                            <i class="fas fa-user-tie mr-1"></i>DITANGANI {{ strtoupper($complaint->managerClaimedBy->name) }}
+                                        </span>
+                                    @else
+                                        <span class="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-800">
+                                            <i class="fas fa-exclamation-triangle mr-1"></i>PERLU MANAGER
+                                        </span>
+                                    @endif
                                 @endif
                             @endif
                         </td>
@@ -141,7 +155,22 @@
                                     @elseif($complaint->manager_claimed_by === auth()->id())
                                         <!-- Diklaim oleh Manager ini -->
                                         <div class="inline-flex space-x-1">
-                                            @if(!$complaint->action_notes || !str_contains($complaint->action_notes, 'Manager Action:'))
+                                            @php
+                                                // Cek apakah manager sudah beri instruksi terbaru (bukan history)
+                                                $hasCurrentAction = false;
+                                                if ($complaint->action_notes) {
+                                                    $latestAction = $complaint->action_notes;
+                                                    if (str_contains($latestAction, ' || ')) {
+                                                        $allActions = explode(' || ', $latestAction);
+                                                        $latestAction = end($allActions);
+                                                    }
+                                                    // Jika latest action bukan history dan ada Manager Action, berarti sudah beri instruksi
+                                                    if (!str_contains($latestAction, '[HISTORY]') && str_contains($latestAction, 'Manager Action:')) {
+                                                        $hasCurrentAction = true;
+                                                    }
+                                                }
+                                            @endphp
+                                            @if(!$hasCurrentAction)
                                                 <!-- Manager belum beri instruksi -->
                                                 <a href="{{ route('complaints.manager-action-form', $complaint) }}" class="text-white bg-purple-600 hover:bg-purple-700 transition-colors duration-200 px-3 py-1 rounded text-xs inline-flex items-center">
                                                     <i class="fas fa-clipboard-list mr-1"></i>Instruksi
@@ -149,14 +178,17 @@
                                                 <form method="POST" action="{{ route('complaints.release-escalation', $complaint) }}" class="inline-block">
                                                     @csrf
                                                     @method('PATCH')
-                                                    <button type="submit" class="text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-200 px-3 py-1 rounded text-xs">
+                                                    <button type="submit" class="text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-200 px-3 py-1 rounded text-xs" onclick="return confirm('Yakin ingin melepas eskalasi ini? CS akan menangani sendiri.')">
                                                         <i class="fas fa-hand-point-left mr-1"></i>Lepas
                                                     </button>
                                                 </form>
                                             @else
-                                                <!-- Manager sudah beri instruksi - tidak ada button lagi -->
+                                                <!-- Manager sudah beri instruksi - CS yang harus follow up -->
                                                 <span class="text-green-600 text-xs bg-green-100 px-2 py-1 rounded">
-                                                    <i class="fas fa-check mr-1"></i>Instruksi Diberikan
+                                                    <i class="fas fa-check mr-1"></i>Instruksi Selesai
+                                                </span>
+                                                <span class="text-blue-600 text-xs bg-blue-100 px-2 py-1 rounded ml-1">
+                                                    <i class="fas fa-arrow-right mr-1"></i>Menunggu CS Follow Up
                                                 </span>
                                             @endif
                                         </div>
@@ -234,21 +266,51 @@
                                                 <span class="text-gray-500 text-xs">Ditangani {{ $complaint->handledBy->name ?? 'CS lain' }}</span>
                                             @endif
                                         @else
-                                            <!-- Jika sudah dieskalasi, CS tidak bisa menyelesaikan - hanya manager yang approve -->
-                                        
-                                        @if($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action: resolved'))
-                                            <span class="text-green-600 text-xs bg-green-100 px-2 py-1 rounded font-medium">
-                                                🔺 Selesai
-                                            </span>
-                                        @elseif($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action: return_to_cs'))
-                                            <span class="text-blue-600 text-xs bg-blue-100 px-2 py-1 rounded font-medium">
-                                                🔺 Kembali
-                                            </span>
-                                        @else
-                                            <span class="text-orange-600 text-xs bg-orange-100 px-2 py-1 rounded font-medium">
-                                                🔺 Tunggu
-                                            </span>
-                                        @endif
+                                            <!-- Jika sudah dieskalasi, cek status manager action -->
+                                            @if($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action: resolved'))
+                                                <!-- Manager sudah selesaikan masalah, CS perlu follow up ke customer -->
+                                                @if($complaint->handled_by === auth()->id() || auth()->user()->role === 'manager' || auth()->user()->role === 'admin')
+                                                    <form method="POST" action="{{ route('complaints.update-status', $complaint) }}" class="inline-block">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <input type="hidden" name="status" value="selesai">
+                                                        <button type="submit" class="text-white bg-green-600 hover:bg-green-700 transition-colors duration-200 px-3 py-1 rounded text-xs inline-flex items-center" onclick="return confirm('Konfirmasi bahwa customer sudah diberi feedback dan komplain selesai?')">
+                                                            <i class="fas fa-check mr-1"></i>Konfirmasi Selesai
+                                                        </button>
+                                                    </form>
+                                                    <span class="text-green-600 text-xs bg-green-100 px-2 py-1 rounded ml-2">
+                                                        <i class="fas fa-info-circle mr-1"></i>Manager Sudah Tangani
+                                                    </span>
+                                                @else
+                                                    <span class="text-green-600 text-xs bg-green-100 px-2 py-1 rounded font-medium">
+                                                        <i class="fas fa-check-circle mr-1"></i>Manager Selesai - Menunggu CS Follow Up
+                                                    </span>
+                                                @endif
+                                            @elseif($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action: return_to_cs'))
+                                                <!-- Manager kembalikan ke CS untuk ditangani lebih lanjut -->
+                                                @if($complaint->handled_by === auth()->id() || auth()->user()->role === 'manager' || auth()->user()->role === 'admin')
+                                                    <form method="POST" action="{{ route('complaints.update-status', $complaint) }}" class="inline-block">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <input type="hidden" name="status" value="selesai">
+                                                        <button type="submit" class="text-white bg-green-600 hover:bg-green-700 transition-colors duration-200 px-3 py-1 rounded text-xs inline-flex items-center" onclick="return confirm('Tandai komplain ini sebagai selesai?')">
+                                                            <i class="fas fa-check mr-1"></i>Selesai
+                                                        </button>
+                                                    </form>
+                                                    <span class="text-blue-600 text-xs bg-blue-100 px-2 py-1 rounded ml-2">
+                                                        <i class="fas fa-arrow-left mr-1"></i>Dikembalikan Manager
+                                                    </span>
+                                                @else
+                                                    <span class="text-blue-600 text-xs bg-blue-100 px-2 py-1 rounded font-medium">
+                                                        <i class="fas fa-arrow-left mr-1"></i>Dikembalikan - CS {{ $complaint->handledBy->name ?? 'Lain' }} Menangani
+                                                    </span>
+                                                @endif
+                                            @else
+                                                <!-- Masih menunggu manager action -->
+                                                <span class="text-orange-600 text-xs bg-orange-100 px-2 py-1 rounded font-medium">
+                                                    <i class="fas fa-clock mr-1"></i>Menunggu Instruksi Manager
+                                                </span>
+                                            @endif
                                     @endif
                                 </div>
                                 @elseif($complaint->status === 'selesai')

@@ -159,7 +159,9 @@
                class="group bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 hover:border-indigo-300">
                 <div class="flex items-center">
                     <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center group-hover:bg-indigo-200 transition-colors duration-300">
-                        <i class="fas fa-user-plus text-indigo-600"></i>
+                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                        </svg>
                     </div>
                     <div class="ml-3">
                         <h4 class="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors duration-300">Tambah Pengguna</h4>
@@ -172,7 +174,9 @@
                class="group bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 hover:border-purple-300">
                 <div class="flex items-center">
                     <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors duration-300">
-                        <i class="fas fa-tags text-purple-600"></i>
+                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                        </svg>
                     </div>
                     <div class="ml-3">
                         <h4 class="text-sm font-semibold text-gray-900 group-hover:text-purple-600 transition-colors duration-300">Tambah Kategori</h4>
@@ -229,7 +233,9 @@
             <div class="space-y-3">
                 <div class="flex items-center p-3 bg-blue-50 rounded-lg">
                     <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                        <i class="fas fa-plus text-blue-600 text-sm"></i>
+                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
                     </div>
                     <div class="flex-1">
                         <p class="text-sm font-medium text-gray-900">Komplain baru ditambahkan</p>
@@ -239,7 +245,9 @@
                 
                 <div class="flex items-center p-3 bg-green-50 rounded-lg">
                     <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                        <i class="fas fa-check text-green-600 text-sm"></i>
+                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
                     </div>
                     <div class="flex-1">
                         <p class="text-sm font-medium text-gray-900">Komplain diselesaikan</p>
@@ -249,7 +257,9 @@
 
                 <div class="flex items-center p-3 bg-purple-50 rounded-lg">
                     <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
-                        <i class="fas fa-user-plus text-purple-600 text-sm"></i>
+                        <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                        </svg>
                     </div>
                     <div class="flex-1">
                         <p class="text-sm font-medium text-gray-900">Pengguna baru terdaftar</p>

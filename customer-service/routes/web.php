@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CustomerComplaintController;
 use App\Http\Controllers\ComplaintCategoryController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -11,10 +12,12 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\PublicController;
 
 // Public Routes (No Login Required)
-Route::get('/', [PublicController::class, 'index'])->name('home');
-Route::get('/faq', [PublicController::class, 'faq'])->name('faq');
-Route::get('/kontak', [PublicController::class, 'contact'])->name('contact');
-Route::get('/alur-komplain', [PublicController::class, 'complaintFlow'])->name('complaint-flow');
+Route::middleware('prevent.back')->group(function () {
+    Route::get('/', [PublicController::class, 'index'])->name('home');
+    Route::get('/faq', [PublicController::class, 'faq'])->name('faq');
+    Route::get('/kontak', [PublicController::class, 'contact'])->name('contact');
+    Route::get('/alur-komplain', [PublicController::class, 'complaintFlow'])->name('complaint-flow');
+});
 
 // Complaint routes that require authentication
 Route::middleware('auth')->group(function () {
@@ -46,9 +49,9 @@ Route::middleware('auth')->group(function () {
     
     // Customer Routes
     Route::middleware(['role:customer'])->group(function () {
-        Route::get('/customer/complaints', [\App\Http\Controllers\CustomerComplaintController::class, 'index'])->name('customer.complaints');
-        Route::post('/customer/complaints/{complaint}/mark-read', [\App\Http\Controllers\CustomerComplaintController::class, 'markAsRead'])->name('customer.complaints.mark-read');
-        Route::delete('/customer/complaints/{complaint}', [\App\Http\Controllers\CustomerComplaintController::class, 'destroy'])->name('customer.complaints.destroy');
+        Route::get('/customer/complaints', [CustomerComplaintController::class, 'index'])->name('customer.complaints');
+        Route::post('/customer/complaints/{complaint}/mark-read', [CustomerComplaintController::class, 'markAsRead'])->name('customer.complaints.mark-read');
+        Route::delete('/customer/complaints/{complaint}', [CustomerComplaintController::class, 'destroy'])->name('customer.complaints.destroy');
     });
     
     

@@ -16,61 +16,87 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create Admin user
-        $admin = User::create([
-            'name' => 'Administrator',
-            'email' => 'admin@karunialaris.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-            'is_active' => true,
-        ]);
+      
+       
+        // ========================================
+        // 1. CREATE USERS (Admin, Manager, CS Staff, Customers)
+        // ========================================
+        
+        $admin = User::updateOrCreate(
+            ['email' => 'admin@karunialaris.com'],
+            [
+                'name' => 'Administrator',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+                'is_active' => true,
+            ]
+        );
 
-        // Create Manager
-        $manager = User::create([
-            'name' => 'Manager CS',
-            'email' => 'manager@karunialaris.com',
-            'password' => Hash::make('password'),
-            'role' => 'manager',
-            'is_active' => true,
-        ]);
+        $manager = User::updateOrCreate(
+            ['email' => 'manager@karunialaris.com'],
+            [
+                'name' => 'Manager CS',
+                'password' => Hash::make('password'),
+                'role' => 'manager',
+                'is_active' => true,
+            ]
+        );
 
-        // Create CS staff
-        $csStaff = User::create([
-            'name' => 'Staff CS',
-            'email' => 'cs@karunialaris.com',
-            'password' => Hash::make('password'),
-            'role' => 'cs',
-            'is_active' => true,
-        ]);
+        $csStaff = User::updateOrCreate(
+            ['email' => 'cs@karunialaris.com'],
+            [
+                'name' => 'Staff CS',
+                'password' => Hash::make('password'),
+                'role' => 'cs',
+                'is_active' => true,
+            ]
+        );
 
-        // Create sample customers
-        $customer1 = User::create([
-            'name' => 'Budi Santoso',
-            'email' => 'budi@email.com',
-            'password' => Hash::make('password'),
-            'role' => 'customer',
-            'is_active' => true,
-        ]);
+        $customer1 = User::updateOrCreate(
+            ['email' => 'budi@email.com'],
+            [
+                'name' => 'Budi Santoso',
+                'password' => Hash::make('password'),
+                'role' => 'customer',
+                'is_active' => true,
+            ]
+        );
 
-        $customer2 = User::create([
-            'name' => 'Sari Dewi',
-            'email' => 'sari@email.com',
-            'password' => Hash::make('password'),
-            'role' => 'customer',
-            'is_active' => true,
-        ]);
+        $customer2 = User::updateOrCreate(
+            ['email' => 'sari@email.com'],
+            [
+                'name' => 'Sari Dewi',
+                'password' => Hash::make('password'),
+                'role' => 'customer',
+                'is_active' => true,
+            ]
+        );
 
-        $customer3 = User::create([
-            'name' => 'Andi Wijaya',
-            'email' => 'andi@email.com',
-            'password' => Hash::make('password'),
-            'role' => 'customer',
-            'is_active' => true,
-        ]);
+        $customer3 = User::updateOrCreate(
+            ['email' => 'andi@email.com'],
+            [
+                'name' => 'Andi Wijaya',
+                'password' => Hash::make('password'),
+                'role' => 'customer',
+                'is_active' => true,
+            ]
+        );
 
-        // Create complaint categories
+        $customer4 = User::updateOrCreate(
+            ['email' => 'dewi@email.com'],
+            [
+                'name' => 'Dewi Lestari',
+                'password' => Hash::make('password'),
+                'role' => 'customer',
+                'is_active' => true,
+            ]
+        );
+
+        // ========================================
+        // 2. CREATE COMPLAINT CATEGORIES
+        // ========================================
+        
         $categories = [
-            // Original categories
             ['name' => 'Tabung Bocor', 'description' => 'Komplain terkait tabung gas yang bocor'],
             ['name' => 'Galon Kotor', 'description' => 'Komplain terkait galon air yang kotor'],
             ['name' => 'Keterlambatan Pengiriman', 'description' => 'Komplain terkait keterlambatan pengiriman'],
@@ -81,76 +107,184 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($categories as $category) {
-            ComplaintCategory::create($category);
+            ComplaintCategory::updateOrCreate(
+                ['name' => $category['name']],
+                ['description' => $category['description']]
+            );
         }
 
-        // Create customer profiles
-        $customerProfile1 = Customer::create([
-            'user_id' => $customer1->id,
-            'phone' => '081234567890',
-            'address' => 'Jl. Merdeka No. 123, Jakarta',
-        ]);
+        // ========================================
+        // 3. CREATE CUSTOMER PROFILES
+        // ========================================
+        
+        $customerProfile1 = Customer::updateOrCreate(
+            ['user_id' => $customer1->id],
+            [
+                'phone' => '081234567890',
+                'address' => 'Jl. Merdeka No. 123, Jakarta',
+            ]
+        );
 
-        $customerProfile2 = Customer::create([
-            'user_id' => $customer2->id,
-            'phone' => '081234567891',
-            'address' => 'Jl. Sudirman No. 456, Jakarta',
-        ]);
+        $customerProfile2 = Customer::updateOrCreate(
+            ['user_id' => $customer2->id],
+            [
+                'phone' => '081234567891',
+                'address' => 'Jl. Sudirman No. 456, Jakarta',
+            ]
+        );
 
-        $customerProfile3 = Customer::create([
-            'user_id' => $customer3->id,
-            'phone' => '081234567892',
-            'address' => 'Jl. Thamrin No. 789, Jakarta',
-        ]);
+        $customerProfile3 = Customer::updateOrCreate(
+            ['user_id' => $customer3->id],
+            [
+                'phone' => '081234567892',
+                'address' => 'Jl. Thamrin No. 789, Jakarta',
+            ]
+        );
 
-        // Create sample complaints
+        $customerProfile4 = Customer::updateOrCreate(
+            ['user_id' => $customer4->id],
+            [
+                'phone' => '081234567893',
+                'address' => 'Jl. Gatot Subroto No. 321, Jakarta',
+            ]
+        );
+
+        // ========================================
+        // 4. CREATE COMPLAINTS WITH WORKFLOW SCENARIOS
+        // ========================================
+
+        // SCENARIO 1: Complaint Baru (belum ditangani)
         Complaint::create([
             'customer_id' => $customerProfile1->id,
             'complaint_category_id' => 1,
             'description' => 'Tabung gas 12kg yang baru diantar ternyata bocor di bagian regulator. Sudah coba dipasang tapi gas terus keluar.',
             'customer_phone' => '081234567890',
-            'status' => 'diproses',
+            'status' => 'baru',
         ]);
 
+        // SCENARIO 2: Complaint Baru (menunggu CS claim)
         Complaint::create([
             'customer_id' => $customerProfile2->id,
-            'complaint_category_id' => 2,
-            'description' => 'Galon air yang diantar dalam kondisi kotor dan berbau tidak sedap. Ada kerak putih di bagian dalam galon.',
+            'complaint_category_id' => 6,
+            'description' => 'Staff pengiriman tidak ramah saat mengantar galon, berbicara kasar dan melempar galon.',
             'customer_phone' => '081234567891',
-            'status' => 'selesai',
+            'status' => 'baru',
         ]);
 
-        // Create escalated complaint with manager action
+        // SCENARIO 3: Complaint Diproses oleh CS (belum ada response)
         Complaint::create([
             'customer_id' => $customerProfile3->id,
-            'complaint_category_id' => 3,
-            'description' => 'Pesanan gas yang dijanjikan hari Senin baru datang hari Rabu. Sudah menunggu tapi tidak ada kabar dari driver.',
+            'complaint_category_id' => 2,
+            'description' => 'Galon air yang diantar dalam kondisi kotor dan berbau tidak sedap. Ada kerak putih di bagian dalam galon.',
             'customer_phone' => '081234567892',
-            'status' => 'selesai',
+            'status' => 'diproses',
             'handled_by' => $csStaff->id,
-            'resolved_by' => $csStaff->id,
-            'resolved_at' => now(),
-            'escalation_to' => $manager->id,
-            'escalated_at' => now()->subHours(2),
-            'escalation_reason' => 'tidak ada kabar driver',
-            'escalated_by' => $csStaff->id,
-            'action_notes' => 'Manager Action: resolved - Notes: driver sebentar lagi akan tiba karena kendala distribusi',
-            'cs_response' => 'saya sudah menghubungi driver sebentar lagi akan tiba',
-            'cs_response_updated_at' => now()->subMinutes(30),
         ]);
 
-        // Create escalated complaint waiting for manager action
+        // SCENARIO 4: Complaint Diproses dengan CS Response
+        Complaint::create([
+            'customer_id' => $customerProfile4->id,
+            'complaint_category_id' => 3,
+            'description' => 'Pesanan gas yang dijanjikan hari Senin baru datang hari Kamis. Sudah menunggu 3 hari tidak ada kabar.',
+            'customer_phone' => '081234567893',
+            'status' => 'diproses',
+            'handled_by' => $csStaff->id,
+            'cs_response' => 'Mohon maaf atas keterlambatan. Kami sedang menghubungi driver untuk segera mengirimkan pesanan Anda.',
+            'cs_response_updated_at' => now()->subHours(1),
+        ]);
+
+        // SCENARIO 5: Complaint Diescalate ke Manager (menunggu manager claim)
         Complaint::create([
             'customer_id' => $customerProfile1->id,
-            'complaint_category_id' => 1,
+            'complaint_category_id' => 4,
             'description' => 'Tabung gas bocor parah, sudah ganti regulator tetap bocor. Kemungkinan ada masalah di tabung.',
             'customer_phone' => '081234567890',
             'status' => 'diproses',
             'handled_by' => $csStaff->id,
             'escalation_to' => $manager->id,
-            'escalated_at' => now()->subHour(),
-            'escalation_reason' => 'masalah teknis tabung yang kompleks, perlu penanganan khusus',
+            'escalated_at' => now()->subHours(2),
+            'escalation_reason' => 'Masalah teknis tabung yang kompleks, perlu penanganan khusus dari manager',
             'escalated_by' => $csStaff->id,
         ]);
+
+        // SCENARIO 6: Complaint Diescalate dan sudah di-claim Manager (menunggu action)
+        Complaint::create([
+            'customer_id' => $customerProfile2->id,
+            'complaint_category_id' => 5,
+            'description' => 'Pelayanan sangat buruk, sudah komplain berkali-kali tapi tidak ada tindak lanjut.',
+            'customer_phone' => '081234567891',
+            'status' => 'diproses',
+            'handled_by' => $csStaff->id,
+            'escalation_to' => $manager->id,
+            'escalated_at' => now()->subHours(3),
+            'escalation_reason' => 'Customer sudah komplain berulang kali, perlu penanganan langsung dari manager',
+            'escalated_by' => $csStaff->id,
+            'manager_claimed_by' => $manager->id,
+            'manager_claimed_at' => now()->subHour(),
+        ]);
+
+        // SCENARIO 7: Complaint Selesai (resolved by CS tanpa escalation)
+        Complaint::create([
+            'customer_id' => $customerProfile3->id,
+            'complaint_category_id' => 2,
+            'description' => 'Galon yang diterima ada retakan kecil di bagian bawah.',
+            'customer_phone' => '081234567892',
+            'status' => 'selesai',
+            'handled_by' => $csStaff->id,
+            'resolved_by' => $csStaff->id,
+            'resolved_at' => now()->subDays(1),
+            'cs_response' => 'Kami sudah mengirimkan galon pengganti yang baru. Terima kasih atas laporannya.',
+            'cs_response_updated_at' => now()->subDays(1)->subHours(2),
+            'created_at' => now()->subDays(1)->subHours(3),
+            'updated_at' => now()->subDays(1),
+        ]);
+
+        // SCENARIO 8: Complaint Selesai (resolved by Manager setelah escalation)
+        Complaint::create([
+            'customer_id' => $customerProfile4->id,
+            'complaint_category_id' => 3,
+            'description' => 'Pesanan gas yang dijanjikan hari Senin baru datang hari Rabu. Sudah menunggu tapi tidak ada kabar dari driver.',
+            'customer_phone' => '081234567893',
+            'status' => 'selesai',
+            'handled_by' => $csStaff->id,
+            'escalation_to' => $manager->id,
+            'escalated_at' => now()->subDays(2),
+            'escalation_reason' => 'Keterlambatan pengiriman yang signifikan, customer sangat kecewa',
+            'escalated_by' => $csStaff->id,
+            'manager_claimed_by' => $manager->id,
+            'manager_claimed_at' => now()->subDays(2)->addHours(1),
+            'resolved_by' => $manager->id,
+            'resolved_at' => now()->subDays(1),
+            'action_notes' => 'Sudah menghubungi driver dan memastikan pengiriman segera dilakukan. Memberikan kompensasi berupa diskon untuk pembelian berikutnya.',
+            'cs_response' => 'Pesanan Anda sudah dalam perjalanan dan akan tiba dalam 1 jam. Mohon maaf atas ketidaknyamanannya.',
+            'cs_response_updated_at' => now()->subDays(1)->subHours(2),
+            'created_at' => now()->subDays(3),
+            'updated_at' => now()->subDays(1),
+        ]);
+
+        // SCENARIO 9: Complaint Selesai (return to CS dari Manager, kemudian resolved)
+        Complaint::create([
+            'customer_id' => $customerProfile1->id,
+            'complaint_category_id' => 7,
+            'description' => 'Ada kesalahan harga yang ditagihkan, lebih mahal dari harga normal.',
+            'customer_phone' => '081234567890',
+            'status' => 'selesai',
+            'handled_by' => $csStaff->id,
+            'escalation_to' => $manager->id,
+            'escalated_at' => now()->subDays(3),
+            'escalation_reason' => 'Masalah terkait harga, perlu konfirmasi dari manager',
+            'escalated_by' => $csStaff->id,
+            'manager_claimed_by' => $manager->id,
+            'manager_claimed_at' => now()->subDays(3)->addHours(2),
+            'resolved_by' => $csStaff->id,
+            'resolved_at' => now()->subDays(2),
+            'action_notes' => 'Harga sudah sesuai dengan kebijakan terbaru. CS dapat menjelaskan ke customer tentang perubahan harga.',
+            'cs_response' => 'Mohon maaf atas kebingungannya. Harga tersebut sudah sesuai dengan kebijakan terbaru perusahaan yang berlaku sejak bulan ini. Kami sudah mengirimkan email penjelasan detail.',
+            'cs_response_updated_at' => now()->subDays(2)->subHours(1),
+            'created_at' => now()->subDays(4),
+            'updated_at' => now()->subDays(2),
+        ]);
+
+       
     }
 }

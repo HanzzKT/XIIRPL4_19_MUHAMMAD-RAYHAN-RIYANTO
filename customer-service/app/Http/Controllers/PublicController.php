@@ -11,6 +11,19 @@ class PublicController extends Controller
 {
     public function index(Request $request)
     {
+        // Redirect staff (cs, manager, admin) to their respective dashboards
+        if (Auth::check()) {
+            $userRole = Auth::user()->role;
+            
+            if ($userRole === 'cs') {
+                return redirect()->route('cs.dashboard');
+            } elseif ($userRole === 'manager') {
+                return redirect()->route('manager.dashboard');
+            } elseif ($userRole === 'admin') {
+                return redirect()->route('admin.dashboard');
+            }
+        }
+        
         $categories = ComplaintCategory::where('is_active', true)->get();
 
         $complaints = collect();
@@ -40,6 +53,19 @@ class PublicController extends Controller
 
     public function faq()
     {
+        // Redirect staff (cs, manager, admin) to their respective dashboards
+        if (Auth::check()) {
+            $userRole = Auth::user()->role;
+            
+            if ($userRole === 'cs') {
+                return redirect()->route('cs.dashboard');
+            } elseif ($userRole === 'manager') {
+                return redirect()->route('manager.dashboard');
+            } elseif ($userRole === 'admin') {
+                return redirect()->route('admin.dashboard');
+            }
+        }
+        
         $faqs = [
             [
                 'question' => 'Kenapa gas berbau tidak sedap?',
@@ -68,6 +94,19 @@ class PublicController extends Controller
 
     public function contact()
     {
+        // Redirect staff (cs, manager, admin) to their respective dashboards
+        if (Auth::check()) {
+            $userRole = Auth::user()->role;
+            
+            if ($userRole === 'cs') {
+                return redirect()->route('cs.dashboard');
+            } elseif ($userRole === 'manager') {
+                return redirect()->route('manager.dashboard');
+            } elseif ($userRole === 'admin') {
+                return redirect()->route('admin.dashboard');
+            }
+        }
+        
         $contacts = [
             'whatsapp' => '081234567890',
             'email' => 'cs@karunialaris.com',
@@ -84,6 +123,19 @@ class PublicController extends Controller
 
     public function complaintFlow()
     {
+        // Redirect staff (cs, manager, admin) to their respective dashboards
+        if (Auth::check()) {
+            $userRole = Auth::user()->role;
+            
+            if ($userRole === 'cs') {
+                return redirect()->route('cs.dashboard');
+            } elseif ($userRole === 'manager') {
+                return redirect()->route('manager.dashboard');
+            } elseif ($userRole === 'admin') {
+                return redirect()->route('admin.dashboard');
+            }
+        }
+        
         $steps = [
             [
                 'step' => 1,

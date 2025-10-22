@@ -79,23 +79,15 @@
                         @enderror
                     </div>
 
-                    <!-- Remember Me -->
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <input id="remember" name="remember" type="checkbox" 
-                                   class="w-4 h-4 text-[#171717] bg-white border-[#e4e4e7] rounded focus:ring-[#171717] focus:ring-2">
-                            <label for="remember" class="ml-2 text-sm text-[#71717a]">
-                                Remember me
-                            </label>
-                        </div>
-
-                        @if (Route::has('password.request'))
-                            <a class="text-sm text-[#71717a] hover:text-[#171717] transition-colors" 
-                               href="{{ route('password.request') }}">
-                                Forgot password?
-                            </a>
-                        @endif
+                    <!-- Forgot Password Link -->
+                    @if (Route::has('password.request'))
+                    <div class="text-right">
+                        <a class="text-sm text-[#71717a] hover:text-[#171717] transition-colors" 
+                           href="{{ route('password.request') }}">
+                            Forgot password?
+                        </a>
                     </div>
+                    @endif
 
                     <!-- Submit Button -->
                     <button type="submit" class="vercel-button vercel-button-primary w-full">

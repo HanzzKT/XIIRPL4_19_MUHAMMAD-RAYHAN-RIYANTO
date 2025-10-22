@@ -68,13 +68,41 @@
                                         @endif
                                     </td>
                                 </tr>
-                                @if($complaint->action_notes)
+                                @php
+                                    // Logika smart: tampilkan yang paling relevan untuk customer
+                                    $showActionNotes = $complaint->action_notes && !$complaint->cs_response;
+                                    $showManagerAction = $complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action:') && !$complaint->cs_response;
+                                @endphp
+                                
+                                {{-- Tampilkan Action Notes hanya jika tidak ada CS Response --}}
+                                @if($showActionNotes && !$showManagerAction)
                                 <tr>
-                                    <td class="px-6 py-3 text-sm font-medium text-gray-500 bg-gray-50 align-top">Catatan dari CS</td>
+                                    <td class="px-6 py-3 text-sm font-medium text-gray-500 bg-gray-50 align-top">Catatan Internal</td>
                                     <td class="px-6 py-3 text-sm text-blue-900 bg-blue-50">{{ $complaint->action_notes }}</td>
                                 </tr>
                                 @endif
                                 
+                                {{-- Tampilkan Manager Action dengan format yang lebih baik --}}
+                                @if($showManagerAction)
+                                <tr>
+                                    <td class="px-6 py-3 text-sm font-medium text-gray-500 bg-gray-50 align-top">Status Penanganan</td>
+                                    <td class="px-6 py-3 text-sm text-blue-900 bg-blue-50">
+                                        @php
+                                            // Parse manager action untuk tampilan yang lebih baik
+                                            $actionText = $complaint->action_notes;
+                                            if (str_contains($actionText, 'Manager Action: resolved')) {
+                                                $actionText = str_replace('Manager Action: resolved', '✅ Masalah telah diselesaikan oleh Manager', $actionText);
+                                            } elseif (str_contains($actionText, 'Manager Action: return_to_cs')) {
+                                                $actionText = str_replace('Manager Action: return_to_cs', '🔄 Dikembalikan ke CS untuk penanganan lebih lanjut', $actionText);
+                                            }
+                                            $actionText = str_replace(' - Notes:', '<br><strong>Catatan:</strong>', $actionText);
+                                        @endphp
+                                        {!! $actionText !!}
+                                    </td>
+                                </tr>
+                                @endif
+                                
+                                {{-- CS Response - ini yang paling penting untuk customer --}}
                                 @if($complaint->cs_response)
                                     @php
                                         $isReadKey = 'complaint_' . $complaint->id . '_read';
@@ -89,19 +117,25 @@
                                             <td class="px-6 py-3 text-sm font-medium text-green-700 bg-green-100 align-top">
                                                 <div class="flex items-center">
                                                     <div class="w-3 h-3 bg-green-500 rounded-full mr-2 animate-ping"></div>
-                                                    Response CS
+                                                    Balasan Customer Service
                                                     <span class="ml-2 px-2 py-1 text-xs bg-red-600 text-white rounded-full animate-bounce">BARU!</span>
                                                 </div>
                                             </td>
                                             <td class="px-6 py-3 text-sm text-green-900 bg-green-50">
                                                 <div class="font-medium mb-2 text-green-800">{{ $complaint->cs_response }}</div>
                                                 @if($complaint->cs_response_updated_at)
-                                                    <div class="text-xs text-green-600 mb-2">
-                                                        <i class="fas fa-clock mr-1"></i>{{ $complaint->cs_response_updated_at->format('d M Y, H:i') }}
+                                                    <div class="text-xs text-green-600 mb-2 flex items-center">
+                                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                        </svg>
+                                                        {{ $complaint->cs_response_updated_at->format('d M Y, H:i') }}
                                                     </div>
                                                 @endif
-                                                <button onclick="markAsRead({{ $complaint->id }})" class="mt-2 px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors shadow-lg">
-                                                    <i class="fas fa-check mr-2"></i>Tandai Sudah Dibaca
+                                                <button onclick="markAsRead({{ $complaint->id }})" class="mt-2 px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors shadow-lg flex items-center">
+                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                    </svg>
+                                                    Tandai Sudah Dibaca
                                                 </button>
                                             </td>
                                         </tr>
@@ -110,21 +144,30 @@
                                         <tr class="bg-gray-50">
                                             <td class="px-6 py-3 text-sm font-medium text-gray-600 bg-gray-100 align-top">
                                                 <div class="flex items-center">
-                                                    <i class="fas fa-check-circle text-gray-500 mr-2"></i>
-                                                    Response CS
+                                                    <svg class="w-5 h-5 text-gray-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    Balasan Customer Service
                                                     <span class="ml-2 px-2 py-1 text-xs bg-gray-500 text-white rounded-full">DIBACA</span>
                                                 </div>
                                             </td>
                                             <td class="px-6 py-3 text-sm text-gray-700 bg-gray-50">
                                                 <div class="font-medium mb-2">{{ $complaint->cs_response }}</div>
                                                 @if($complaint->cs_response_updated_at)
-                                                    <div class="text-xs text-gray-500 mb-1">
-                                                        <i class="fas fa-clock mr-1"></i>{{ $complaint->cs_response_updated_at->format('d M Y, H:i') }}
+                                                    <div class="text-xs text-gray-500 mb-1 flex items-center">
+                                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                        </svg>
+                                                        {{ $complaint->cs_response_updated_at->format('d M Y, H:i') }}
                                                     </div>
                                                 @endif
                                                 @if($complaint->feedback_read_at)
-                                                    <div class="text-xs text-gray-500">
-                                                        <i class="fas fa-eye mr-1"></i>Dibaca: {{ $complaint->feedback_read_at->format('d M Y, H:i') }}
+                                                    <div class="text-xs text-gray-500 flex items-center">
+                                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                        </svg>
+                                                        Dibaca: {{ $complaint->feedback_read_at->format('d M Y, H:i') }}
                                                     </div>
                                                 @endif
                                             </td>
@@ -160,7 +203,7 @@
                             
                             // Update the label to "mati" state
                             const label = row.querySelector('td:first-child');
-                            label.innerHTML = '<div class="flex items-center"><i class="fas fa-check-circle text-gray-500 mr-2"></i>Response CS <span class="ml-2 px-2 py-1 text-xs bg-gray-500 text-white rounded-full">DIBACA</span></div>';
+                            label.innerHTML = '<div class="flex items-center"><svg class="w-5 h-5 text-gray-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Balasan Customer Service <span class="ml-2 px-2 py-1 text-xs bg-gray-500 text-white rounded-full">DIBACA</span></div>';
                             
                             // Update content cell to "mati" state
                             const contentCell = row.querySelector('td:last-child');
@@ -169,11 +212,13 @@
                             
                             contentCell.innerHTML = `
                                 <div class="font-medium mb-2">${responseText}</div>
-                                <div class="text-xs text-gray-500 mb-1">
-                                    <i class="fas fa-clock mr-1"></i>${timeText}
+                                <div class="text-xs text-gray-500 mb-1 flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    ${timeText}
                                 </div>
-                                <div class="text-xs text-gray-500">
-                                    <i class="fas fa-eye mr-1"></i>Sudah dibaca
+                                <div class="text-xs text-gray-500 flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                    Sudah dibaca
                                 </div>
                             `;
                         }
@@ -230,7 +275,7 @@
                 
                 // Update the label to "mati" state
                 const label = row.querySelector('td:first-child');
-                label.innerHTML = '<div class="flex items-center"><i class="fas fa-check-circle text-gray-500 mr-2"></i>Response CS <span class="ml-2 px-2 py-1 text-xs bg-gray-500 text-white rounded-full">DIBACA</span></div>';
+                label.innerHTML = '<div class="flex items-center"><svg class="w-5 h-5 text-gray-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Balasan Customer Service <span class="ml-2 px-2 py-1 text-xs bg-gray-500 text-white rounded-full">DIBACA</span></div>';
                 
                 // Update content cell to "mati" state
                 const contentCell = row.querySelector('td:last-child');
@@ -240,8 +285,9 @@
                 contentCell.innerHTML = `
                     <div class="font-medium mb-2">${responseText}</div>
                     <div class="text-xs text-gray-500 mb-1">${timeText}</div>
-                    <div class="text-xs text-gray-500">
-                        <i class="fas fa-eye mr-1"></i>Dibaca: ${new Date().toLocaleDateString('id-ID')} ${new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'})}
+                    <div class="text-xs text-gray-500 flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        Dibaca: ${new Date().toLocaleDateString('id-ID')} ${new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'})}
                     </div>
                 `;
                 

@@ -12,19 +12,22 @@
             <a href="{{ auth()->user()->role === 'manager' ? route('manager.users.index') : route('users.index') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors duration-200">
                 Kembali
             </a>
-            @if($user->role === 'cs' || ($user->role === 'manager' && auth()->user()->role === 'admin'))
-                <a href="{{ route('users.edit', $user) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200">
-                    Edit
-                </a>
-            @endif
-            @if($user->id !== auth()->id() && $user->role === 'cs')
-                <form method="POST" action="{{ route('users.destroy', $user) }}" class="inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" onclick="return confirm('Yakin ingin menghapus user ini?')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors duration-200">
-                        Hapus
-                    </button>
-                </form>
+            @if(auth()->user()->role === 'admin')
+                <!-- Hanya Admin yang bisa edit dan hapus -->
+                @if($user->role === 'cs' || ($user->role === 'manager' && auth()->user()->role === 'admin'))
+                    <a href="{{ route('users.edit', $user) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+                        Edit
+                    </a>
+                @endif
+                @if($user->id !== auth()->id() && ($user->role === 'cs' || $user->role === 'manager'))
+                    <form method="POST" action="{{ route('users.destroy', $user) }}" class="inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" onclick="return confirm('Yakin ingin menghapus user ini?')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+                            Hapus
+                        </button>
+                    </form>
+                @endif
             @endif
         </div>
     </div>
@@ -86,26 +89,32 @@
     <!-- Performance Statistics -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">Statistik Kinerja</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div class="text-center">
                 <div class="text-2xl font-bold text-blue-600">{{ $user->handledComplaints->count() }}</div>
                 <div class="text-sm text-gray-600">Komplain Ditangani</div>
             </div>
             <div class="text-center">
+                @php
+                    $completedFromHandled = $user->handledComplaints->where('status', 'selesai')->count();
+                @endphp
+                <div class="text-2xl font-bold text-teal-600">{{ $completedFromHandled }}</div>
+                <div class="text-sm text-gray-600">Selesai dari Ditangani</div>
+            </div>
+            <div class="text-center">
                 <div class="text-2xl font-bold text-green-600">{{ $user->resolvedComplaints->count() }}</div>
-                <div class="text-sm text-gray-600">Komplain Diselesaikan</div>
+                <div class="text-sm text-gray-600">Diselesaikan Sendiri</div>
             </div>
             <div class="text-center">
                 @php
                     $totalHandled = $user->handledComplaints->count();
-                    $totalResolved = $user->resolvedComplaints->count();
-                    $successRate = $totalHandled > 0 ? round(($totalResolved / $totalHandled) * 100, 1) : 0;
+                    $successRate = $totalHandled > 0 ? round(($completedFromHandled / $totalHandled) * 100, 1) : 0;
                 @endphp
                 <div class="text-2xl font-bold text-purple-600">{{ $successRate }}%</div>
                 <div class="text-sm text-gray-600">Tingkat Penyelesaian</div>
             </div>
         </div>
-    </div>
+       </div>
     @endif
 </div>
 @endsection

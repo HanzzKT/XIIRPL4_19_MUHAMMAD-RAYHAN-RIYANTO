@@ -28,11 +28,15 @@ return new class extends Migration
             $table->text('cs_response')->nullable();
             $table->timestamp('cs_response_updated_at')->nullable();
             
-            // Escalation fields
-            $table->unsignedBigInteger('escalation_to')->nullable();
+            // Escalation fields with foreign keys
+            $table->foreignId('escalation_to')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamp('escalated_at')->nullable();
             $table->text('escalation_reason')->nullable();
-            $table->unsignedBigInteger('escalated_by')->nullable();
+            $table->foreignId('escalated_by')->nullable()->constrained('users')->onDelete('set null');
+            
+            // Manager claim fields
+            $table->foreignId('manager_claimed_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->timestamp('manager_claimed_at')->nullable();
             
             $table->timestamps();
         });

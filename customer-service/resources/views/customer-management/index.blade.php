@@ -61,7 +61,9 @@
                             @if($customer->last_login_at)
                                 <div class="flex items-center">
                                     <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-2">
-                                        <i class="fas fa-clock text-xs text-green-600"></i>
+                                        <svg class="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
                                     </div>
                                     <div>
                                         <div class="text-sm text-gray-900">{{ $customer->last_login_at->format('d M Y') }}</div>
@@ -71,7 +73,9 @@
                             @else
                                 <div class="flex items-center">
                                     <div class="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center mr-2">
-                                        <i class="fas fa-times text-xs text-gray-600"></i>
+                                        <svg class="w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
                                     </div>
                                     <span class="text-gray-500">Belum pernah login</span>
                                 </div>

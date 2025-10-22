@@ -41,7 +41,8 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-[#71717a] mb-1">Selesai</p>
-                    <p class="text-2xl font-display font-semibold text-[#22c55e]">{{ $stats['completedEscalations'] }}</p>
+                    <p class="text-2xl font-display font-semibold text-[#22c55e]">{{ $stats['completedComplaints'] }}</p>
+                    <p class="text-xs text-[#71717a] mt-1">Total sistem: {{ $stats['totalComplaints'] }}</p>
                 </div>
                 <div class="w-10 h-10 bg-[#f0fdf4] rounded-lg flex items-center justify-center group-hover:bg-[#dcfce7] transition-colors">
                     <svg class="w-5 h-5 text-[#22c55e]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,7 +56,8 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-[#71717a] mb-1">Skor Penyelesaian</p>
-                    <p class="text-2xl font-display font-semibold text-[#171717]">{{ number_format($stats['escalationCompletionRate'], 1) }}</p>
+                    <p class="text-2xl font-display font-semibold text-[#171717]">{{ number_format($stats['systemCompletionRate'], 1) }}%</p>
+                    <p class="text-xs text-[#71717a] mt-1">Eskalasi: {{ number_format($stats['escalationCompletionRate'], 1) }}%</p>
                 </div>
                 <div class="w-10 h-10 bg-[#f4f4f5] rounded-lg flex items-center justify-center group-hover:bg-[#e4e4e7] transition-colors">
                     <svg class="w-5 h-5 text-[#71717a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,7 +80,9 @@
                     <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                         <div class="flex items-center">
                             <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-clock text-xs text-blue-600"></i>
+                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
                             </div>
                             <div class="ml-3">
                                 <h3 class="font-medium text-sm text-gray-900">Rata-rata Waktu Penyelesaian</h3>
@@ -86,15 +90,17 @@
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-lg font-bold text-blue-600">2.5</p>
-                            <p class="text-xs text-gray-600">hari</p>
+                            <p class="text-lg font-bold text-blue-600">{{ $stats['avgResolutionTime'] ?? '0' }}</p>
+                            <p class="text-xs text-gray-600">{{ $stats['avgResolutionUnit'] ?? 'jam' }}</p>
                         </div>
                     </div>
 
                     <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                         <div class="flex items-center">
                             <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-percentage text-xs text-green-600"></i>
+                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
                             </div>
                             <div class="ml-3">
                                 <h3 class="font-medium text-sm text-gray-900">Rasio Penyelesaian</h3>
@@ -102,7 +108,7 @@
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-lg font-bold text-green-600">{{ number_format($stats['escalationCompletionRate'], 1) }}</p>
+                            <p class="text-lg font-bold text-green-600">{{ number_format($stats['systemCompletionRate'], 1) }}%</p>
                             <p class="text-xs text-gray-600">dari total</p>
                         </div>
                     </div>
@@ -110,7 +116,9 @@
                     <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
                         <div class="flex items-center">
                             <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-users text-xs text-purple-600"></i>
+                                <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                                </svg>
                             </div>
                             <div class="ml-3">
                                 <h3 class="font-medium text-sm text-gray-900">Total CS Aktif</h3>
@@ -156,12 +164,27 @@
                                 @if($complaint->escalation_to)
                                     @if($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action:'))
                                         @if(str_contains($complaint->action_notes, 'resolved'))
-                                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">🔺 Selesai</span>
+                                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full flex items-center">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
+                                                </svg>
+                                                Selesai
+                                            </span>
                                         @else
-                                            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">🔺 Kembali</span>
+                                            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full flex items-center">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
+                                                </svg>
+                                                Kembali
+                                            </span>
                                         @endif
                                     @else
-                                        <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">🔺 Tunggu</span>
+                                        <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full flex items-center">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
+                                            </svg>
+                                            Tunggu
+                                        </span>
                                     @endif
                                 @else
                                     @if($complaint->status === 'baru')
@@ -173,7 +196,9 @@
                                     @endif
                                 @endif
                                 <a href="{{ route('complaints.show', $complaint) }}" class="text-purple-600 hover:text-purple-700 transition-colors duration-200">
-                                    <i class="fas fa-arrow-right text-xs"></i>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
                                 </a>
                             </div>
                         </div>
@@ -182,7 +207,9 @@
                 @else
                     <div class="text-center py-8">
                         <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                            <i class="fas fa-inbox text-lg text-gray-400"></i>
+                            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                            </svg>
                         </div>
                         <h3 class="text-sm font-medium text-gray-900 mb-1">Belum ada komplain baru</h3>
                         <p class="text-xs text-gray-600">Komplain baru akan ditampilkan di sini</p>

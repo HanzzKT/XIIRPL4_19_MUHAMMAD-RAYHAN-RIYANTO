@@ -76,8 +76,20 @@ class DashboardController extends Controller
     {
         // Manager focuses on escalated complaints
         $totalEscalated = Complaint::whereNotNull('escalation_to')->count();
+        
+        // Completed escalations: yang sudah selesai ATAU sudah ditangani manager
         $completedEscalated = Complaint::whereNotNull('escalation_to')
-            ->where('status', 'selesai')->count();
+            ->where(function($query) {
+                $query->where('status', 'selesai')
+                      ->orWhere(function($q) {
+                          $q->whereNotNull('action_notes')
+                            ->where('action_notes', 'like', 'Manager Action:%');
+                      });
+            })->count();
+        
+        // Total semua komplain untuk metrics umum
+        $totalComplaints = Complaint::count();
+        $completedComplaints = Complaint::where('status', 'selesai')->count();
         
         $stats = [
             'totalEscalations' => $totalEscalated,
@@ -89,6 +101,12 @@ class DashboardController extends Controller
                 })->count(),
             'escalationCompletionRate' => $totalEscalated > 0 ? round(($completedEscalated / $totalEscalated) * 100, 1) : 0,
             'activeCS' => User::where('role', 'cs')->where('is_active', true)->count(),
+            // Tambahkan metrics umum sistem
+            'totalComplaints' => $totalComplaints,
+            'completedComplaints' => $completedComplaints,
+            'systemCompletionRate' => $totalComplaints > 0 ? round(($completedComplaints / $totalComplaints) * 100, 1) : 0,
+            'avgResolutionTime' => $this->getAverageResolutionTime(),
+            'avgResolutionUnit' => $this->getResolutionTimeUnit(),
         ];
         
         // Recent new complaints for manager to monitor
@@ -207,10 +225,39 @@ class DashboardController extends Controller
             $query->whereNotNull('escalation_to');
         }
         
-        $resolved = $query->select(DB::raw('AVG(TIMESTAMPDIFF(HOUR, created_at, resolved_at)) as avg_hours'))
+        $resolved = $query->select(DB::raw('AVG(ABS(TIMESTAMPDIFF(HOUR, created_at, resolved_at))) as avg_hours'))
             ->first();
             
-        return $resolved->avg_hours ? round($resolved->avg_hours, 1) : 0;
+        if (!$resolved || !$resolved->avg_hours || $resolved->avg_hours <= 0) {
+            return 0;
+        }
+        
+        // Convert to days if more than 24 hours, otherwise keep in hours
+        $hours = $resolved->avg_hours;
+        if ($hours >= 24) {
+            return round($hours / 24, 1);
+        }
+        
+        return round($hours, 1);
+    }
+    
+    private function getResolutionTimeUnit($escalatedOnly = false)
+    {
+        $query = Complaint::whereNotNull('resolved_at');
+        
+        if ($escalatedOnly) {
+            $query->whereNotNull('escalation_to');
+        }
+        
+        $resolved = $query->select(DB::raw('AVG(ABS(TIMESTAMPDIFF(HOUR, created_at, resolved_at))) as avg_hours'))
+            ->first();
+            
+        if (!$resolved || !$resolved->avg_hours || $resolved->avg_hours <= 0) {
+            return 'jam';
+        }
+        
+        // Return unit based on average time
+        return $resolved->avg_hours >= 24 ? 'hari' : 'jam';
     }
     
     private function getMonthlyStats($escalatedOnly = false)

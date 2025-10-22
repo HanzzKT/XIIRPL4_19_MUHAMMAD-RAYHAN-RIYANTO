@@ -1,4 +1,4 @@
-@extends('layouts.navbar')
+@extends('layouts.sidebar')
 
 @section('content')
 <div class="max-w-4xl mx-auto space-y-6">
@@ -73,8 +73,15 @@
                 <a href="{{ route('my-complaints') }}" class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200">
                     Batal
                 </a>
-                <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 transform hover:scale-105">
-                    Buat Komplain
+                <button type="submit" id="submitBtn" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+                    <span id="submitText">Buat Komplain</span>
+                    <span id="loadingText" class="hidden">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Mengirim...
+                    </span>
                 </button>
             </div>
         </form>
@@ -99,12 +106,67 @@ function updateCharCount(textarea) {
     }
 }
 
-// Initialize character count on page load
+// Prevent double form submission
+function preventDoubleSubmission() {
+    const form = document.querySelector('form');
+    const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
+    const loadingText = document.getElementById('loadingText');
+    let isSubmitting = false;
+
+    if (form && submitBtn) {
+        form.addEventListener('submit', function(e) {
+            // If already submitting, prevent the form submission
+            if (isSubmitting) {
+                e.preventDefault();
+                return false;
+            }
+
+            // Check if form is valid before proceeding
+            if (!form.checkValidity()) {
+                return true; // Let the browser handle validation
+            }
+
+            // Mark as submitting
+            isSubmitting = true;
+            
+            // Disable the submit button
+            submitBtn.disabled = true;
+            
+            // Show loading state
+            submitText.classList.add('hidden');
+            loadingText.classList.remove('hidden');
+            
+            // Optional: Re-enable after a timeout as a fallback (in case of network issues)
+            setTimeout(function() {
+                if (isSubmitting) {
+                    isSubmitting = false;
+                    submitBtn.disabled = false;
+                    submitText.classList.remove('hidden');
+                    loadingText.classList.add('hidden');
+                }
+            }, 10000); // 10 seconds timeout
+        });
+
+        // Handle page unload to reset state
+        window.addEventListener('beforeunload', function() {
+            isSubmitting = false;
+            submitBtn.disabled = false;
+            submitText.classList.remove('hidden');
+            loadingText.classList.add('hidden');
+        });
+    }
+}
+
+// Initialize character count and form protection on page load
 document.addEventListener('DOMContentLoaded', function() {
     const textarea = document.getElementById('description');
     if (textarea) {
         updateCharCount(textarea);
     }
+    
+    // Initialize double submission prevention
+    preventDoubleSubmission();
 });
 </script>
 @endsection

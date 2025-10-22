@@ -172,6 +172,28 @@ class ComplaintController extends Controller
             }
         }
 
+        // Check for duplicate complaint submission (within last 5 minutes)
+        $recentComplaint = Complaint::where('customer_id', $customer->id)
+            ->where('complaint_category_id', $request->complaint_category_id)
+            ->where('description', $request->description)
+            ->where('created_at', '>=', now()->subMinutes(5))
+            ->first();
+
+        if ($recentComplaint) {
+            return redirect()->route('customer.complaints')
+                ->with('info', 'Komplain yang sama sudah dikirim sebelumnya. Silakan tunggu respons dari tim CS kami atau buat komplain dengan detail yang berbeda.');
+        }
+
+        // Check for too many complaints in short time (rate limiting)
+        $recentComplaintsCount = Complaint::where('customer_id', $customer->id)
+            ->where('created_at', '>=', now()->subMinutes(10))
+            ->count();
+
+        if ($recentComplaintsCount >= 3) {
+            return redirect()->route('customer.complaints')
+                ->with('warning', 'Anda telah mengirim terlalu banyak komplain dalam waktu singkat. Silakan tunggu beberapa menit sebelum mengirim komplain baru.');
+        }
+
         // Create complaint
         Complaint::create([
             'customer_id' => $customer->id,
@@ -308,6 +330,11 @@ class ComplaintController extends Controller
 
     public function updateResponse(Request $request, Complaint $complaint)
     {
+        // Cek apakah komplain sudah selesai
+        if ($complaint->status === 'selesai') {
+            return redirect()->back()->with('error', 'Tidak dapat mengupdate response karena komplain sudah selesai');
+        }
+
         $request->validate([
             'cs_response' => 'required|string|max:1000'
         ]);
@@ -353,11 +380,23 @@ class ComplaintController extends Controller
 
         // Update complaint with escalation info
         // Status tetap 'diproses' karena manager tidak menyelesaikan langsung
+        // Jika ada action_notes dari return sebelumnya, simpan sebagai history
+        $previousNotes = $complaint->action_notes;
+        $newActionNotes = null;
+        
+        if ($previousNotes && str_contains($previousNotes, 'Dikembalikan ke CS')) {
+            // Ada instruksi dari manager sebelumnya, simpan sebagai history
+            $newActionNotes = '[HISTORY] ' . $previousNotes;
+        }
+        
         $complaint->update([
             'escalation_to' => $manager->id,
             'escalated_at' => now(),
             'escalation_reason' => $request->escalation_reason,
-            'escalated_by' => auth()->id()
+            'escalated_by' => auth()->id(),
+            'action_notes' => $newActionNotes, // Simpan history atau null
+            'manager_claimed_by' => null, // Reset claim
+            'manager_claimed_at' => null,
         ]);
 
         return redirect()->route('complaints.show', $complaint)
@@ -379,6 +418,12 @@ class ComplaintController extends Controller
                 ->with('error', 'Tindakan Manager sudah diambil sebelumnya');
         }
 
+        // Check if current manager has claimed this escalation
+        if ($complaint->manager_claimed_by !== auth()->id()) {
+            return redirect()->route('complaints.show', $complaint)
+                ->with('error', 'Anda harus mengambil eskalasi ini terlebih dahulu sebelum memberikan tindakan');
+        }
+
         return view('complaint-management.manager-action-form', compact('complaint'));
     }
 
@@ -389,27 +434,47 @@ class ComplaintController extends Controller
             'manager_notes' => 'nullable|string|max:1000'
         ]);
 
+        // Pastikan hanya manager yang sudah claim yang bisa memberikan action
+        if ($complaint->manager_claimed_by !== auth()->id()) {
+            return redirect()->back()->with('error', 'Anda tidak dapat memberikan tindakan pada eskalasi yang bukan Anda ambil.');
+        }
+
+        $managerName = auth()->user()->name;
+        
+        // Buat action notes
+        $actionNotes = 'Manager Action: ' . $request->manager_action . ' by ' . $managerName;
+        if ($request->manager_notes) {
+            $actionNotes .= ' - Notes: ' . $request->manager_notes;
+        }
+        
         if ($request->manager_action === 'resolved') {
             // Manager menandai masalah sudah ditangani, tapi CS yang harus memberikan feedback final
             $complaint->update([
-                'action_notes' => 'Manager Action: ' . $request->manager_action . 
-                                ($request->manager_notes ? ' - Notes: ' . $request->manager_notes : ''),
+                'action_notes' => $actionNotes,
                 // Status tetap 'diproses' karena CS harus memberikan feedback final
             ]);
             
-            $message = 'Masalah berhasil ditandai sebagai sudah ditangani. CS akan memberikan feedback final ke customer.';
+            $message = 'Masalah berhasil ditandai sebagai sudah ditangani oleh ' . $managerName . '. CS akan memberikan feedback final ke customer.';
         } else {
             // Manager mengembalikan ke CS untuk ditangani lebih lanjut
+            // Simpan instruksi manager agar CS bisa lihat
+            $returnNotes = 'Dikembalikan ke CS oleh ' . $managerName;
+            if ($request->manager_notes) {
+                $returnNotes .= ' - Instruksi: ' . $request->manager_notes;
+            }
+            $returnNotes .= ' pada ' . now()->format('d M Y, H:i');
+            
             $complaint->update([
-                'action_notes' => 'Manager Action: ' . $request->manager_action . 
-                                ($request->manager_notes ? ' - Notes: ' . $request->manager_notes : ''),
-                'escalation_to' => null, // Hapus eskalasi
-                'escalated_at' => null,
-                'escalation_reason' => null,
-                'escalated_by' => null,
+                'action_notes' => $returnNotes, // Simpan instruksi untuk CS
+                'escalation_to' => null, // Hapus eskalasi aktif
+                'escalated_at' => null, // Reset tanggal eskalasi
+                'escalation_reason' => null, // Reset alasan eskalasi
+                'escalated_by' => null, // Reset yang eskalasi
+                'manager_claimed_by' => null, // Reset claim
+                'manager_claimed_at' => null,
             ]);
             
-            $message = 'Komplain berhasil dikembalikan ke CS untuk penanganan lebih lanjut.';
+            $message = 'Komplain berhasil dikembalikan ke CS untuk penanganan lebih lanjut oleh ' . $managerName . '.';
         }
 
         return redirect()->route('complaints.show', $complaint)
@@ -539,6 +604,23 @@ class ComplaintController extends Controller
         $request->validate([
             'status' => 'required|in:baru,diproses,selesai'
         ]);
+
+        $user = auth()->user();
+
+        // Validasi: Manager tidak bisa menyelesaikan komplain yang tidak di-eskalasi
+        if ($user->role === 'manager' && $request->status === 'selesai') {
+            // Manager hanya bisa menyelesaikan komplain yang di-eskalasi dan sudah diberi action
+            if (!$complaint->escalation_to || !($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action: resolved'))) {
+                return redirect()->back()->with('error', 'Manager hanya bisa menyelesaikan komplain yang sudah di-eskalasi dan diberi instruksi.');
+            }
+        }
+
+        // Validasi: CS hanya bisa menyelesaikan komplain yang ditanganinya
+        if ($user->role === 'cs' && $request->status === 'selesai') {
+            if ($complaint->handled_by !== $user->id) {
+                return redirect()->back()->with('error', 'Anda hanya bisa menyelesaikan komplain yang Anda tangani.');
+            }
+        }
 
         $updateData = [
             'status' => $request->status,
