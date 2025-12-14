@@ -29,6 +29,9 @@ class Complaint extends Model
         'escalated_by',
         'manager_claimed_by',
         'manager_claimed_at',
+        'image_path',
+        'video_path',
+        'location',
     ];
 
     protected $casts = [

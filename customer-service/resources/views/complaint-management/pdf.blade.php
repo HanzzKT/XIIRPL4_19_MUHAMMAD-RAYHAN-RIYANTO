@@ -8,71 +8,98 @@
             font-family: Arial, sans-serif;
             font-size: 12px;
             margin: 0;
-            padding: 20px;
+            padding: 0;
         }
         .header {
+            position: fixed;
+            top: -50px;
+            left: 0;
+            right: 0;
+            height: 60px;
             text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            padding: 3px 0 3px 0;
+            background: #fff;
         }
         .header h1 {
-            margin: 0;
-            font-size: 18px;
+            margin: 28px 0 0 0;
+            font-size: 14px;
             color: #333;
         }
         .header p {
-            margin: 5px 0 0 0;
+            margin: 1px 0 0 0;
             color: #666;
+            font-size: 9px;
         }
         .meta-info {
-            margin-bottom: 20px;
-            padding: 10px;
+            margin-top: 2px;
+            margin-bottom: 3px;
+            padding: 2px 3px;
             background-color: #f5f5f5;
             border-radius: 5px;
         }
         .meta-info p {
-            margin: 3px 0;
+            display: block;
+            margin: 0 0 2px 0;
+            line-height: 1.15;
+            font-size: 8px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-top: 3px;
+            table-layout: fixed;
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 2px 3px;
             text-align: left;
             vertical-align: top;
+            color: #000;
+        }
+        /* Center align for specific columns: No, Tanggal, Status, Eskalasi */
+        thead th:nth-child(1), tbody td:nth-child(1),
+        thead th:nth-child(2), tbody td:nth-child(2),
+        thead th:nth-child(6), tbody td:nth-child(6),
+        thead th:nth-child(7), tbody td:nth-child(7) {
+            text-align: center;
         }
         th {
             background-color: #f2f2f2;
             font-weight: bold;
-            font-size: 10px;
+            font-size: 7.5px;
+            line-height: 1.1;
         }
         td {
-            font-size: 10px;
+            font-size: 8px;
+            line-height: 1.0;
         }
+        thead { display: table-header-group; }
+        tfoot { display: table-row-group; }
+        tbody { display: table-row-group; }
         .status {
-            padding: 2px 6px;
-            border-radius: 3px;
-            color: white;
-            font-weight: bold;
-            text-align: center;
+            padding: 0;
+            border-radius: 0;
+            color: #000;
+            font-weight: normal;
+            text-align: left;
+            background: transparent;
         }
-        .status-baru { background-color: #dc3545; }
-        .status-diproses { background-color: #ffc107; color: #000; }
-        .status-selesai { background-color: #28a745; }
+        .status-baru { background-color: transparent; color: #000; }
+        .status-diproses { background-color: transparent; color: #000; }
+        .status-selesai { background-color: transparent; color: #000; }
         .escalation {
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-weight: bold;
-            text-align: center;
+            padding: 0;
+            border-radius: 0;
+            font-weight: normal;
+            text-align: left;
             font-size: 9px;
+            color: #000;
+            background: transparent;
         }
-        .escalation-pending { background-color: #fd7e14; color: white; }
-        .escalation-resolved { background-color: #28a745; color: white; }
-        .escalation-returned { background-color: #007bff; color: white; }
+        .escalation-pending { background-color: transparent; color: #000; }
+        .escalation-resolved { background-color: transparent; color: #000; }
+        .escalation-returned { background-color: transparent; color: #000; }
         
         /* Prevent unknown characters */
         .escalation {
@@ -80,22 +107,57 @@
             text-rendering: optimizeLegibility;
         }
         .priority {
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-weight: bold;
-            text-align: center;
+            padding: 0;
+            border-radius: 0;
+            font-weight: normal;
+            text-align: left;
+            color: #000;
+            background: transparent;
         }
-        .priority-low { background-color: #6c757d; color: white; }
-        .priority-normal { background-color: #007bff; color: white; }
-        .priority-high { background-color: #fd7e14; color: white; }
-        .priority-critical { background-color: #dc3545; color: white; }
+        .priority-low { background-color: transparent; color: #000; }
+        .priority-normal { background-color: transparent; color: #000; }
+        .priority-high { background-color: transparent; color: #000; }
+        .priority-critical { background-color: transparent; color: #000; }
         .footer {
-            margin-top: 30px;
-            text-align: center;
+            position: fixed;
+            bottom: -130px;
+            left: 0;
+            right: 0;
+            height: 130px;
             font-size: 10px;
             color: #666;
             border-top: 1px solid #ddd;
-            padding-top: 10px;
+            background: #fff;
+        }
+        .footer .signature {
+            position: absolute;
+            right: 30px;
+            bottom: 86px;
+            width: auto;
+            text-align: right;
+        }
+        .footer .signature .sig-line {
+            height: 32px;
+            border-bottom: 1px solid #333;
+            margin-bottom: 8px;
+        }
+        .footer .signature .sig-name {
+            font-weight: bold;
+            color: #333;
+            margin-top: 2px;
+        }
+        .footer .signature .sig-role {
+            font-size: 9px;
+            color: #555;
+        }
+        .footer .disclaimer {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 14px;
+            text-align: center;
+            line-height: 1.3;
+            font-size: 9px;
         }
         .truncate {
             max-width: 150px;
@@ -103,42 +165,69 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+        .desc {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        /* Explicit spacer to ensure content clears fixed header */
+        .content-spacer { height: 0; }
         @media print {
             body { margin: 0; }
             .header { page-break-after: avoid; }
             table { page-break-inside: auto; }
             tr { page-break-inside: avoid; page-break-after: auto; }
-            
-            /* Hide browser-generated headers and footers */
-            @page {
-                margin: 0.5in;
-                size: A4;
-            }
         }
         
-        /* Hide URL and other browser elements */
+        /* Page margins to allocate space for header and footer */
         @page {
-            margin: 0.5in;
+            margin: 70px 28px 8px 28px; /* top right bottom left */
             size: A4;
-            @bottom-left { content: none; }
-            @bottom-center { content: none; }
-            @bottom-right { content: none; }
-            @top-left { content: none; }
-            @top-center { content: none; }
+        }
+        /* Signature section: keep signature + disclaimer together and align to right */
+        .signature-section {
+            page-break-inside: avoid;
+            break-inside: avoid;
+            page-break-before: auto;
+            page-break-after: auto;
+            margin-top: 12px;
+        }
+        .signature-block {
+            width: auto;
+            margin-left: auto;
+            text-align: center;
+        }
+        .signature-block .sig-line {
+            height: 12px;
+            border-bottom: 1px solid #333;
+            margin-bottom: 3px;
+        }
+        .signature-block .sig-name {
+            font-weight: bold;
+            color: #000;
+            margin-top: 1px;
+            font-size: 9px;
+        }
+        .signature-block .sig-role {
+            font-size: 9px;
+            color: #000;
+        }
+        .disclaimer { 
+            margin-top: 3px; 
+            font-size: 7.5px; 
+            line-height: 1.0;
+            text-align: center; 
+            color: #000;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        @if(auth()->user()->role === 'cs')
-            <h1>LAPORAN INDIVIDU KOMPLAIN</h1>
-            <h2>{{ auth()->user()->name }} - Customer Service</h2>
-        @else
-            <h1>LAPORAN KOMPLAIN PELANGGAN</h1>
-            <h2>PT Karunia Laris Abadi</h2>
-        @endif
+        <h1>LAPORAN KOMPLAIN PELANGGAN PT Karunia Laris Abadi</h1>
         <p>Tanggal Cetak: {{ date('d F Y, H:i') }} WIB</p>
     </div>
+
+    <div class="content-spacer"></div>
 
     <div class="meta-info">
         @if(isset($request))
@@ -176,6 +265,17 @@
     </div>
 
     <table>
+        <colgroup>
+            <col style="width:5%">
+            <col style="width:9%">
+            <col style="width:16%">
+            <col style="width:20%">
+            <col style="width:10%">
+            <col style="width:8%">
+            <col style="width:8%">
+            <col style="width:12%">
+            <col style="width:12%">
+        </colgroup>
         <thead>
             <tr>
                 <th style="width: 5%">No</th>
@@ -199,7 +299,7 @@
                     <small>{{ $complaint->customer->phone ?? $complaint->customer_phone ?? '-' }}</small>
                 </td>
                 <td>
-                    <div>{{ Str::limit($complaint->description, 100) }}</div>
+                    <div>{{ Str::limit($complaint->description, 60) }}</div>
                 </td>
                 <td>{{ $complaint->category->name ?? '-' }}</td>
                 <td>
@@ -223,7 +323,7 @@
                             <span class="escalation escalation-pending">Tunggu</span>
                         @endif
                     @else
-                        <span style="color: #666; font-size: 9px;">-</span>
+                        <span style="font-size: 9px; color: #000;">-</span>
                     @endif
                 </td>
                 <td>
@@ -231,10 +331,10 @@
                         @if($complaint->manager_claimed_by)
                             <strong>{{ $complaint->managerClaimedBy->name }}</strong>
                         @else
-                            <span style="color: #f59e0b; font-size: 9px;">Belum diambil</span>
+                            <span style="font-size: 9px; color: #000;">Belum diambil</span>
                         @endif
                     @else
-                        <span style="color: #666; font-size: 9px;">-</span>
+                        <span style="font-size: 9px; color: #000;">-</span>
                     @endif
                 </td>
                 <td>
@@ -243,7 +343,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="9" style="text-align: center; padding: 20px; color: #666;">
+                <td colspan="9" style="text-align: center; padding: 20px; color: #000;">
                     Tidak ada data komplain yang tersedia
                 </td>
             </tr>
@@ -251,9 +351,44 @@
         </tbody>
     </table>
 
-    <div class="footer">
-        <p>Laporan ini digenerate secara otomatis oleh Sistem Customer Service PT Karunia Laris Abadi</p>
-        <p>Untuk informasi lebih lanjut, hubungi tim IT atau Customer Service</p>
+    @php
+        $sigName = trim(auth()->user()->name ?? '');
+        $nameLen = mb_strlen($sigName ?? '');
+        // width in ch so it approximates the name length; clamp to reasonable bounds
+        $lineCh = max(16, min(50, (int) ceil($nameLen * 1.15)));
+        $roleMap = [
+            'cs' => 'CS',
+            'manager' => 'Manager ',
+            'admin' => 'Admin',
+        ];
+        $roleRaw = strtolower(auth()->user()->role ?? '');
+        $roleText = $roleMap[$roleRaw] ?? ucfirst($roleRaw);
+        $linePx = max(120, min(260, (int) ceil(($nameLen ?: 12) * 8.5 + 30)));
+        $isManagerOrAdmin = in_array($roleRaw, ['manager','admin']);
+        $roleLabel = $roleRaw === 'manager' ? 'Manager' : ($roleRaw === 'admin' ? 'Admin' : $roleText);
+    @endphp
+    <div class="signature-section" style="text-align: right;">
+        @php
+            // Signature width that follows name length (approx.) for manager
+            $lineNamePx = max(60, min(600, (int) ceil(($nameLen ?: 1) * 9.0)));
+        @endphp
+        <div class="signature-block" style="display: inline-block; text-align: center;">
+            @if($isManagerOrAdmin)
+                <div class="sig-role" style="font-weight: bold;">Mengetahui</div>
+                <div class="sig-role" style="margin-top: 2px;">{{ $roleLabel }}</div>
+                <div style="display: inline-block; margin-top: 34px;">
+                    <span style="display: inline-block; white-space: nowrap; border-top: 1px solid #333; padding-top: 3px; font-weight: bold; font-size: 9px;">{{ $sigName }}</span>
+                </div>
+            @else
+                <div class="sig-line" style="width: 100%;"></div>
+                <div class="sig-name">{{ $sigName }}</div>
+                <div class="sig-role">{{ $roleText }}</div>
+            @endif
+        </div>
+        <div class="disclaimer">
+            <p>Laporan ini digenerate secara otomatis oleh Sistem Customer Service PT Karunia Laris Abadi</p>
+            <p>Untuk informasi lebih lanjut, hubungi tim IT atau Customer Service</p>
+        </div>
     </div>
 
 </body>

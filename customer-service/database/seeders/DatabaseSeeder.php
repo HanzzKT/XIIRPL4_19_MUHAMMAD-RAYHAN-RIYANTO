@@ -160,6 +160,7 @@ class DatabaseSeeder extends Seeder
             'description' => 'Tabung gas 12kg yang baru diantar ternyata bocor di bagian regulator. Sudah coba dipasang tapi gas terus keluar.',
             'customer_phone' => '081234567890',
             'status' => 'baru',
+            'location' => $customerProfile1->address,
         ]);
 
         // SCENARIO 2: Complaint Baru (menunggu CS claim)
@@ -169,6 +170,7 @@ class DatabaseSeeder extends Seeder
             'description' => 'Staff pengiriman tidak ramah saat mengantar galon, berbicara kasar dan melempar galon.',
             'customer_phone' => '081234567891',
             'status' => 'baru',
+            'location' => $customerProfile2->address,
         ]);
 
         // SCENARIO 3: Complaint Diproses oleh CS (belum ada response)
@@ -179,6 +181,7 @@ class DatabaseSeeder extends Seeder
             'customer_phone' => '081234567892',
             'status' => 'diproses',
             'handled_by' => $csStaff->id,
+            'location' => $customerProfile3->address,
         ]);
 
         // SCENARIO 4: Complaint Diproses dengan CS Response
@@ -191,6 +194,7 @@ class DatabaseSeeder extends Seeder
             'handled_by' => $csStaff->id,
             'cs_response' => 'Mohon maaf atas keterlambatan. Kami sedang menghubungi driver untuk segera mengirimkan pesanan Anda.',
             'cs_response_updated_at' => now()->subHours(1),
+            'location' => $customerProfile4->address,
         ]);
 
         // SCENARIO 5: Complaint Diescalate ke Manager (menunggu manager claim)
@@ -205,6 +209,7 @@ class DatabaseSeeder extends Seeder
             'escalated_at' => now()->subHours(2),
             'escalation_reason' => 'Masalah teknis tabung yang kompleks, perlu penanganan khusus dari manager',
             'escalated_by' => $csStaff->id,
+            'location' => $customerProfile1->address,
         ]);
 
         // SCENARIO 6: Complaint Diescalate dan sudah di-claim Manager (menunggu action)
@@ -221,6 +226,7 @@ class DatabaseSeeder extends Seeder
             'escalated_by' => $csStaff->id,
             'manager_claimed_by' => $manager->id,
             'manager_claimed_at' => now()->subHour(),
+            'location' => $customerProfile2->address,
         ]);
 
         // SCENARIO 7: Complaint Selesai (resolved by CS tanpa escalation)
@@ -237,6 +243,7 @@ class DatabaseSeeder extends Seeder
             'cs_response_updated_at' => now()->subDays(1)->subHours(2),
             'created_at' => now()->subDays(1)->subHours(3),
             'updated_at' => now()->subDays(1),
+            'location' => $customerProfile3->address,
         ]);
 
         // SCENARIO 8: Complaint Selesai (resolved by Manager setelah escalation)
@@ -260,6 +267,7 @@ class DatabaseSeeder extends Seeder
             'cs_response_updated_at' => now()->subDays(1)->subHours(2),
             'created_at' => now()->subDays(3),
             'updated_at' => now()->subDays(1),
+            'location' => $customerProfile4->address,
         ]);
 
         // SCENARIO 9: Complaint Selesai (return to CS dari Manager, kemudian resolved)
@@ -283,6 +291,7 @@ class DatabaseSeeder extends Seeder
             'cs_response_updated_at' => now()->subDays(2)->subHours(1),
             'created_at' => now()->subDays(4),
             'updated_at' => now()->subDays(2),
+            'location' => $customerProfile1->address,
         ]);
 
        

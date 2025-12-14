@@ -149,6 +149,14 @@ class ComplaintController extends Controller
         $request->validate([
             'complaint_category_id' => 'required|exists:complaint_categories,id',
             'description' => 'required|string|max:200',
+            'location' => 'required|string|max:255',
+            'image' => 'required_without:video|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'video' => 'required_without:image|mimes:mp4,webm,mov|max:30720',
+        ], [
+            'image.required_without' => 'Minimal unggah salah satu: foto atau video.',
+            'video.required_without' => 'Minimal unggah salah satu: foto atau video.',
+            'image.mimes' => 'Format foto harus jpeg, jpg, png, atau webp.',
+            'video.mimes' => 'Format video harus mp4, webm, atau mov.',
         ]);
 
         // Get authenticated user
@@ -194,6 +202,18 @@ class ComplaintController extends Controller
                 ->with('warning', 'Anda telah mengirim terlalu banyak komplain dalam waktu singkat. Silakan tunggu beberapa menit sebelum mengirim komplain baru.');
         }
 
+        // Handle optional media uploads
+        $imagePath = null;
+        $videoPath = null;
+
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('complaints/images', 'public');
+        }
+
+        if ($request->hasFile('video')) {
+            $videoPath = $request->file('video')->store('complaints/videos', 'public');
+        }
+
         // Create complaint
         Complaint::create([
             'customer_id' => $customer->id,
@@ -201,6 +221,9 @@ class ComplaintController extends Controller
             'description' => $request->description,
             'customer_phone' => $customer->phone,
             'status' => 'baru',
+            'image_path' => $imagePath,
+            'video_path' => $videoPath,
+            'location' => $request->input('location'),
         ]);
 
         return redirect()->route('customer.complaints')->with('success', 'Komplain Anda berhasil dikirim! Tim CS kami akan segera menghubungi Anda.');
@@ -208,14 +231,18 @@ class ComplaintController extends Controller
     
     public function show(Complaint $complaint)
     {
-        // If user is customer, redirect to their complaints page
+        // Customer can view only their own complaint in a simplified view
         if (auth()->user()->role === 'customer') {
-            return redirect()->route('customer.complaints')
-                ->with('info', 'Silakan lihat komplain Anda di halaman Komplain Saya');
+            $customer = Auth::user()->customer;
+            if (!$customer || $complaint->customer_id !== $customer->id) {
+                return redirect()->route('customer.complaints')->with('error', 'Anda tidak memiliki akses ke komplain ini');
+            }
+
+            $complaint->load(['category']);
+            return view('customer-portal.complaint-show', compact('complaint'));
         }
-        
+
         $complaint->load(['customer.user', 'category', 'handledBy', 'resolvedBy']);
-        
         return view('complaint-management.show', compact('complaint'));
     }
     
@@ -335,6 +362,11 @@ class ComplaintController extends Controller
             return redirect()->back()->with('error', 'Tidak dapat mengupdate response karena komplain sudah selesai');
         }
 
+        // Jika komplain sedang dieskalasi ke Manager, nonaktifkan response CS
+        if ($complaint->escalation_to) {
+            return redirect()->back()->with('error', 'Response CS dinonaktifkan karena komplain sedang ditangani oleh Manager.');
+        }
+
         $request->validate([
             'cs_response' => 'required|string|max:1000'
         ]);
@@ -431,7 +463,9 @@ class ComplaintController extends Controller
     {
         $request->validate([
             'manager_action' => 'required|in:resolved,return_to_cs',
-            'manager_notes' => 'nullable|string|max:1000'
+            'manager_notes' => 'required_if:manager_action,resolved|nullable|string|max:1000'
+        ], [
+            'manager_notes.required_if' => 'Catatan Manager wajib diisi jika memilih "Masalah Sudah Ditangani".',
         ]);
 
         // Pastikan hanya manager yang sudah claim yang bisa memberikan action

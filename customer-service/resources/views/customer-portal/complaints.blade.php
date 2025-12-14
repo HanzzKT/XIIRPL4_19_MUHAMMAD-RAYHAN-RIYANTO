@@ -68,6 +68,72 @@
                                         @endif
                                     </td>
                                 </tr>
+                                @if($complaint->location)
+                                <tr>
+                                    <td class="px-6 py-3 text-sm font-medium text-gray-500 bg-gray-50">Lokasi</td>
+                                    <td class="px-6 py-3 text-sm text-gray-900">{{ $complaint->location }}</td>
+                                </tr>
+                                @endif
+                                @if($complaint->image_path || $complaint->video_path)
+                                <tr>
+                                    <td class="px-6 py-3 text-sm font-medium text-gray-500 bg-gray-50 align-top">Lampiran</td>
+                                    <td class="px-6 py-3 text-sm text-gray-900">
+                                        <div class="flex items-center gap-4 flex-wrap">
+                                            @if($complaint->image_path)
+                                                <img src="{{ asset('storage/'.$complaint->image_path) }}" alt="Foto Komplain" class="h-20 w-auto rounded border border-gray-200">
+                                            @endif
+                                            @if($complaint->video_path)
+                                                <video controls class="h-24 rounded border border-gray-200">
+                                                    <source src="{{ asset('storage/'.$complaint->video_path) }}" type="video/mp4">
+                                                    <source src="{{ asset('storage/'.$complaint->video_path) }}" type="video/webm">
+                                                    Browser Anda tidak mendukung pemutar video.
+                                                </video>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endif
+                                @if($complaint->action_notes && (str_contains($complaint->action_notes, 'Manager Action: resolved') || str_contains($complaint->action_notes, 'Dikembalikan ke CS')))
+                                <tr>
+                                    <td class="px-6 py-3 text-sm font-medium text-gray-500 bg-gray-50 align-top">Response</td>
+                                    <td class="px-6 py-3 text-sm text-gray-900">
+                                        @php
+                                            $managerName = '';
+                                            $feedbackText = '';
+                                            $tanggalInstruksi = '';
+
+                                            if (str_contains($complaint->action_notes, 'Manager Action: resolved')) {
+                                                if (str_contains($complaint->action_notes, ' - Notes: ')) {
+                                                    $parts = explode(' - Notes: ', $complaint->action_notes);
+                                                    $feedbackText = trim($parts[1]);
+                                                    if (str_contains($parts[0], ' by ')) {
+                                                        $nameParts = explode(' by ', $parts[0]);
+                                                        $managerName = trim($nameParts[1]);
+                                                    }
+                                                }
+                                            } else {
+                                                if (str_contains($complaint->action_notes, ' - Instruksi: ')) {
+                                                    $parts = explode(' - Instruksi: ', $complaint->action_notes);
+                                                    if (str_contains($parts[0], 'oleh ')) {
+                                                        $nameParts = explode('oleh ', $parts[0]);
+                                                        $managerName = trim($nameParts[1]);
+                                                    }
+                                                    if (isset($parts[1])) {
+                                                        if (str_contains($parts[1], ' pada ')) {
+                                                            $instruksiParts = explode(' pada ', $parts[1]);
+                                                            $feedbackText = trim($instruksiParts[0]);
+                                                            $tanggalInstruksi = isset($instruksiParts[1]) ? trim($instruksiParts[1]) : '';
+                                                        } else {
+                                                            $feedbackText = trim($parts[1]);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        @endphp
+                                        <div class="px-4 py-3 bg-green-50 text-green-900 border border-green-200 rounded-lg">{{ $feedbackText ?: 'Tidak ada instruksi khusus' }}</div>
+                                    </td>
+                                </tr>
+                                @endif
                                 @php
                                     // Logika smart: tampilkan yang paling relevan untuk customer
                                     $showActionNotes = $complaint->action_notes && !$complaint->cs_response;

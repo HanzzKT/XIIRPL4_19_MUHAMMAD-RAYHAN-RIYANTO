@@ -35,8 +35,16 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
+        $authenticatedUser = Auth::user();
+        if (! $authenticatedUser->is_active) {
+            Auth::logout();
+            throw ValidationException::withMessages([
+                'email' => 'Akun Anda nonaktif. Silakan hubungi administrator.',
+            ]);
+        }
+
         // Update last login time
-        Auth::user()->update(['last_login_at' => now()]);
+        $authenticatedUser->update(['last_login_at' => now()]);
 
         $request->session()->regenerate();
 

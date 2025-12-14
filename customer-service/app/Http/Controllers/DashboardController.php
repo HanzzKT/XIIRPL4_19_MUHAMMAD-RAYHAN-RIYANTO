@@ -14,6 +14,12 @@ class DashboardController extends Controller
     public function index()
     {
         $user = auth()->user();
+        if (!$user->is_active) {
+            auth()->logout();
+            return redirect()->route('login')->withErrors([
+                'email' => 'Akun Anda nonaktif. Silakan hubungi administrator.',
+            ]);
+        }
         
         switch ($user->role) {
             case 'admin':

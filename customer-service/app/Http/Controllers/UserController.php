@@ -138,4 +138,30 @@ class UserController extends Controller
         return redirect()->route('users.index')
             ->with('success', 'User berhasil dihapus');
     }
+
+    public function toggleStatus(User $user)
+    {
+        $currentUser = auth()->user();
+        if ($user->id === $currentUser->id) {
+            return back()->with('error', 'Tidak dapat mengubah status akun sendiri');
+        }
+        if ($currentUser->role === 'manager') {
+            if ($user->role !== 'cs') {
+                abort(403, 'Unauthorized. Manager hanya dapat mengubah status user CS.');
+            }
+        } elseif ($currentUser->role === 'admin') {
+            if ($user->role === 'admin') {
+                return back()->with('error', 'Tidak dapat mengubah status akun admin.');
+            }
+        } else {
+            abort(403, 'Unauthorized.');
+        }
+        $user->is_active = !$user->is_active;
+        $user->save();
+        $statusText = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
+        if ($currentUser->role === 'manager') {
+            return redirect()->route('manager.users.index')->with('success', "User berhasil $statusText");
+        }
+        return redirect()->route('users.index')->with('success', "User berhasil $statusText");
+    }
 }

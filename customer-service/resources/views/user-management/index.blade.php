@@ -128,6 +128,15 @@
                                 <!-- Hanya Admin yang bisa edit dan hapus -->
                                 @if($user->role === 'cs' || ($user->role === 'manager' && auth()->user()->role === 'admin'))
                                     <a href="{{ route('users.edit', $user) }}" class="text-indigo-600 hover:text-indigo-900 transition-colors duration-200">Edit</a>
+                                    @if($user->id !== auth()->id())
+                                        <form method="POST" action="{{ route('users.toggle-status', $user) }}" class="inline">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="{{ $user->is_active ? 'text-yellow-600 hover:text-yellow-800' : 'text-green-600 hover:text-green-800' }} transition-colors duration-200">
+                                                {{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+                                            </button>
+                                        </form>
+                                    @endif
                                 @endif
                                 
                                 @if($user->id !== auth()->id())
@@ -143,7 +152,17 @@
                                 @endif
                             @elseif(auth()->user()->role === 'manager')
                                 <!-- Manager hanya bisa melihat, tidak bisa edit/hapus -->
-                                <span class="text-gray-500 text-xs">View Only</span>
+                                @if($user->role === 'cs' && $user->id !== auth()->id())
+                                    <form method="POST" action="{{ route('manager.users.toggle-status', $user) }}" class="inline">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="{{ $user->is_active ? 'text-yellow-600 hover:text-yellow-800' : 'text-green-600 hover:text-green-800' }} transition-colors duration-200">
+                                            {{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+                                        </button>
+                                    </form>
+                                @else
+                                    <span class="text-gray-500 text-xs">View Only</span>
+                                @endif
                             @endif
                         </td>
                     </tr>

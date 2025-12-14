@@ -33,17 +33,11 @@ class CustomerComplaintController extends Controller
         $customer = Customer::where('user_id', Auth::id())->first();
         
         if (!$customer || $complaint->customer_id !== $customer->id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized access'
-            ], 403);
+            return redirect()->route('customer.complaints')->with('error', 'Anda tidak memiliki akses ke komplain ini');
         }
 
-        // Since we removed feedback tracking columns, just return success
-        return response()->json([
-            'success' => true,
-            'message' => 'Feedback berhasil ditandai sebagai sudah dibaca'
-        ]);
+        // Since we removed feedback tracking columns, just redirect back with success
+        return redirect()->back()->with('success', 'Feedback berhasil ditandai sebagai sudah dibaca');
     }
 
     public function destroy(Complaint $complaint)

@@ -24,8 +24,7 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Kategori</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Komplain</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total Komplain</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
@@ -38,14 +37,9 @@
                         <td class="px-6 py-4">
                             <div class="text-sm text-gray-600">{{ $category->description ?: '-' }}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
                             <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
                                 {{ $category->complaints_count }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 py-1 text-xs font-medium rounded-full {{ $category->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                {{ $category->is_active ? 'Aktif' : 'Nonaktif' }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
@@ -59,7 +53,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="4" class="px-6 py-12 text-center text-gray-500">
                             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                             </svg>

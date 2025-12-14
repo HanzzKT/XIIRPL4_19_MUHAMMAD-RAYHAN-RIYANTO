@@ -28,7 +28,7 @@
 
     <!-- Form -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <form method="POST" action="{{ route('complaints.store.authenticated') }}" class="space-y-6">
+        <form method="POST" action="{{ route('complaints.store.authenticated') }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
 
             <!-- Category -->
@@ -66,6 +66,36 @@
                     </div>
                     <span id="charCount" class="text-xs text-gray-500">0/200</span>
                 </div>
+            </div>
+
+            <!-- Location -->
+            <div>
+                <label for="location" class="block text-sm font-medium text-gray-700 mb-2">Lokasi</label>
+                <input type="text" name="location" id="location" value="{{ old('location') }}" placeholder="Contoh: Gudang A, Jalan Merdeka No. 10" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('location') border-red-300 @enderror">
+                @error('location')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Image (optional) -->
+            <div>
+                <label for="image" class="block text-sm font-medium text-gray-700 mb-2">Foto (opsional)</label>
+                <input type="file" name="image" id="image" accept="image/*"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('image') border-red-300 @enderror">
+                @error('image')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Video (optional) -->
+            <div>
+                <label for="video" class="block text-sm font-medium text-gray-700 mb-2">Video (opsional)</label>
+                <input type="file" name="video" id="video" accept="video/mp4,video/quicktime,video/webm"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('video') border-red-300 @enderror">
+                @error('video')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Submit Button -->

@@ -27,6 +27,9 @@ return new class extends Migration
             $table->foreignId('resolved_by')->nullable()->constrained('users')->onDelete('set null');
             $table->text('cs_response')->nullable();
             $table->timestamp('cs_response_updated_at')->nullable();
+            $table->string('image_path')->nullable();
+            $table->string('video_path')->nullable();
+            $table->string('location');
             
             // Escalation fields with foreign keys
             $table->foreignId('escalation_to')->nullable()->constrained('users')->onDelete('set null');

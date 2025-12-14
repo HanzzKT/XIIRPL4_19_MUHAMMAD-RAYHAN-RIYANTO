@@ -87,7 +87,7 @@
         <div class="vercel-card group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-[#71717a] mb-1">Kategori Aktif</p>
+                    <p class="text-sm text-[#71717a] mb-1">Kategori </p>
                     <p class="text-2xl font-display font-semibold text-[#171717]">{{ $stats['totalCategories'] }}</p>
                 </div>
                 <div class="w-10 h-10 bg-[#fff7ed] rounded-lg flex items-center justify-center group-hover:bg-[#ffedd5] transition-colors">

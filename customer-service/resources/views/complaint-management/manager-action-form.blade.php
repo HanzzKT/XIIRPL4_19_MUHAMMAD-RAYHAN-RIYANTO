@@ -84,7 +84,7 @@
                 <!-- Catatan Manager -->
                 <div class="mb-6">
                     <label for="manager_notes" class="block text-sm font-medium text-gray-700 mb-2">
-                        Catatan Manager (Opsional)
+                        Catatan Manager (wajib jika memilih "Masalah Sudah Ditangani")
                     </label>
                     <textarea 
                         id="manager_notes" 

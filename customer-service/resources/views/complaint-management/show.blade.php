@@ -91,6 +91,39 @@
                     </div>
                 </div>
 
+                @if($complaint->location)
+                <!-- Lokasi -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi</label>
+                    <div class="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-900">
+                        {{ $complaint->location }}
+                    </div>
+                </div>
+                @endif
+
+                @if($complaint->image_path || $complaint->video_path)
+                <!-- Lampiran -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Lampiran</label>
+                    <div class="space-y-4">
+                        @if($complaint->image_path)
+                            <div>
+                                <img src="{{ asset('storage/'.$complaint->image_path) }}" alt="Foto Komplain" class="max-h-80 rounded-lg border border-gray-200">
+                            </div>
+                        @endif
+                        @if($complaint->video_path)
+                            <div>
+                                <video controls class="w-full max-h-96 rounded-lg border border-gray-200">
+                                    <source src="{{ asset('storage/'.$complaint->video_path) }}" type="video/mp4">
+                                    <source src="{{ asset('storage/'.$complaint->video_path) }}" type="video/webm">
+                                    Browser Anda tidak mendukung pemutar video.
+                                </video>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                @endif
+
                 <!-- Manager Return Instructions (when returned to CS) -->
                 @if(!$complaint->escalation_to && $complaint->action_notes && str_contains($complaint->action_notes, 'Dikembalikan ke CS'))
                 <div class="md:col-span-2">
@@ -256,7 +289,7 @@
                 @endif
 
                 <!-- CS Response Section -->
-                @if(in_array(auth()->user()->role, ['cs', 'admin']) && $complaint->handled_by && (!$complaint->escalation_to || ($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action: resolved'))))
+                @if(in_array(auth()->user()->role, ['cs', 'admin']) && $complaint->handled_by && !$complaint->escalation_to)
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         <i class="fas fa-comment-dots mr-2 text-blue-600"></i>Response untuk Customer
@@ -412,21 +445,15 @@
                                         @endif
                                     @elseif($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action: resolved'))
                                         <div class="px-4 py-2 bg-purple-100 text-purple-800 rounded-lg">
-                                            <i class="fas fa-check-circle mr-2"></i>Masalah sudah ditangani - Menunggu CS memberikan feedback final
+                                            <i class="fas fa-check-circle mr-2"></i>Masalah sudah ditangani oleh Manager
                                         </div>
                                     @endif
                                 @endif
                                 
                                 @if(auth()->user()->role === 'cs')
                                     @if($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action: resolved'))
-                                        <!-- Manager sudah menangani, CS bisa memberikan feedback final -->
+                                        <!-- Manager sudah menangani, CS dapat langsung menyelesaikan -->
                                         <div class="flex flex-col space-y-3">
-                                            @if(!$complaint->cs_response)
-                                                <div class="px-4 py-2 bg-blue-50 text-blue-800 rounded-lg text-sm">
-                                                    <i class="fas fa-info-circle mr-2"></i>
-                                                    <strong>Catatan:</strong> Berikan feedback ke customer melalui form "Response untuk Customer" di atas sebelum menyelesaikan komplain.
-                                                </div>
-                                            @endif
                                             <form method="POST" action="{{ route('complaints.update-status', $complaint) }}" class="inline-block">
                                                 @csrf
                                                 @method('PATCH')

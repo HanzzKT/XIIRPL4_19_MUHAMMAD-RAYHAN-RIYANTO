@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
 
 class RoleMiddleware
 {
@@ -12,6 +13,12 @@ class RoleMiddleware
     {
         if (!auth()->check()) {
             return redirect()->route('login');
+        }
+        if (! auth()->user()->is_active) {
+            Auth::logout();
+            return redirect()->route('login')->withErrors([
+                'email' => 'Akun Anda nonaktif. Silakan hubungi administrator.',
+            ]);
         }
 
         $userRole = auth()->user()->role;
