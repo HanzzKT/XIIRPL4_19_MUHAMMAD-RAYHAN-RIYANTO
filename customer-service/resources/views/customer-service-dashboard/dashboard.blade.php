@@ -38,14 +38,14 @@
             const ctx = document.getElementById('csStatsChart');
             if (!ctx) return;
             const data = {
-                labels: ['Total', 'Baru', 'Diproses', 'Selesai'],
+                labels: ['Total Komplain', 'Baru', 'Sedang Diproses', 'Selesai'],
                 datasets: [{
                     label: 'Jumlah Komplain',
                     data: [
                         {{ (int)($stats['totalComplaints'] ?? 0) }},
                         {{ (int)($stats['newComplaints'] ?? 0) }},
-                        {{ (int)($stats['processingComplaints'] ?? 0) }},
-                        {{ (int)($stats['completedComplaints'] ?? 0) }}
+                        {{ (int)($stats['myActiveComplaints'] ?? 0) }},
+                        {{ (int)($stats['myResolvedComplaints'] ?? 0) }}
                     ],
                     backgroundColor: ['#2563eb22','#ef444422','#f59e0b22','#22c55e22'],
                     borderColor: ['#2563eb','#ef4444','#f59e0b','#22c55e'],
@@ -72,6 +72,75 @@
             });
         })();
     </script>
+
+    {{-- ===== Skor Kinerja Saya ===== --}}
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+        {{-- Skor Penyelesaian --}}
+        <div class="vercel-card group">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-[#71717a] mb-1">Skor Penyelesaian</p>
+                    <p class="text-2xl font-display font-semibold text-[#171717]">{{ $stats['myCompletionRate'] }}%</p>
+                    <p class="text-xs text-[#71717a] mt-1">{{ $stats['myResolvedComplaints'] }} dari {{ $stats['myHandledComplaints'] }} selesai</p>
+                </div>
+                <div class="w-10 h-10 bg-[#f4f4f5] rounded-lg flex items-center justify-center group-hover:bg-[#e4e4e7] transition-colors">
+                    <svg class="w-5 h-5 text-[#71717a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        {{-- Komplain Baru --}}
+        <div class="vercel-card group">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-[#71717a] mb-1">Komplain Baru</p>
+                    <p class="text-2xl font-display font-semibold text-[#ef4444]">{{ $stats['newComplaints'] }}</p>
+                    <p class="text-xs text-[#71717a] mt-1">Belum diambil CS</p>
+                </div>
+                <div class="w-10 h-10 bg-[#fef2f2] rounded-lg flex items-center justify-center group-hover:bg-[#fee2e2] transition-colors">
+                    <svg class="w-5 h-5 text-[#ef4444]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        {{-- Sedang Ditangani --}}
+        <div class="vercel-card group">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-[#71717a] mb-1">Sedang Ditangani</p>
+                    <p class="text-2xl font-display font-semibold text-[#f59e0b]">{{ $stats['myActiveComplaints'] }}</p>
+                    <p class="text-xs text-[#71717a] mt-1">Komplain aktif saya</p>
+                </div>
+                <div class="w-10 h-10 bg-[#fffbeb] rounded-lg flex items-center justify-center group-hover:bg-[#fef3c7] transition-colors">
+                    <svg class="w-5 h-5 text-[#f59e0b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        {{-- Total Diselesaikan --}}
+        <div class="vercel-card group">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-[#71717a] mb-1">Total Diselesaikan</p>
+                    <p class="text-2xl font-display font-semibold text-[#22c55e]">{{ $stats['myResolvedComplaints'] }}</p>
+                    <p class="text-xs text-[#71717a] mt-1">Komplain yang saya tutup</p>
+                </div>
+                <div class="w-10 h-10 bg-[#f0fdf4] rounded-lg flex items-center justify-center group-hover:bg-[#dcfce7] transition-colors">
+                    <svg class="w-5 h-5 text-[#22c55e]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+    </div>
 
     <!-- Recent Complaints (Compact) -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200">

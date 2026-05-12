@@ -82,6 +82,14 @@
                     {{ $user->created_at->format('d M Y H:i') }}
                 </div>
             </div>
+            @if($user->division)
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Divisi</label>
+                <div class="px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-900">
+                    {{ $user->division }}
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 

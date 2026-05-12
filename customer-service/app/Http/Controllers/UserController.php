@@ -61,10 +61,16 @@ class UserController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:cs,manager,admin',
+            'division' => 'nullable|string|max:100',
             'is_active' => 'boolean',
         ]);
         
         $validated['password'] = Hash::make($validated['password']);
+        
+        // Hanya simpan division jika role manager
+        if ($validated['role'] !== 'manager') {
+            $validated['division'] = null;
+        }
         
         User::create($validated);
         
@@ -111,8 +117,14 @@ class UserController extends Controller
             'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8|confirmed',
             'role' => $roleValidation,
+            'division' => 'nullable|string|max:100',
             'is_active' => 'boolean',
         ]);
+        
+        // Hanya simpan division jika role manager
+        if ($validated['role'] !== 'manager') {
+            $validated['division'] = null;
+        }
         
         if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);

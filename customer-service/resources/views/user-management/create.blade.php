@@ -66,12 +66,23 @@
             <!-- Role -->
             <div>
                 <label for="role" class="block text-sm font-medium text-gray-700 mb-2">Role *</label>
-                <select name="role" id="role" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('role') border-red-300 @enderror">
+                <select name="role" id="role" required onchange="toggleDivision(this.value)" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('role') border-red-300 @enderror">
                     <option value="">Pilih Role</option>
                     <option value="cs" {{ old('role') === 'cs' ? 'selected' : '' }}>Customer Service</option>
                     <option value="manager" {{ old('role') === 'manager' ? 'selected' : '' }}>Manager</option>
                 </select>
                 @error('role')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Divisi (hanya untuk Manager) -->
+            <div id="division-field" style="{{ old('role') === 'manager' ? '' : 'display:none;' }}">
+                <label for="division" class="block text-sm font-medium text-gray-700 mb-2">Divisi Manager</label>
+                <input type="text" name="division" id="division" value="{{ old('division') }}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('division') border-red-300 @enderror"
+                       placeholder="Contoh: Customer Experience, Operasional, ...">
+                @error('division')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
@@ -97,4 +108,16 @@
         </form>
     </div>
 </div>
+
+<script>
+function toggleDivision(role) {
+    const divisionField = document.getElementById('division-field');
+    if (role === 'manager') {
+        divisionField.style.display = '';
+    } else {
+        divisionField.style.display = 'none';
+        document.getElementById('division').value = '';
+    }
+}
+</script>
 @endsection

@@ -26,7 +26,7 @@
         <div class="vercel-card group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-[#71717a] mb-1">Total Eskalasi</p>
+                    <p class="text-sm text-[#71717a] mb-1">Total Eskalasi Manager</p>
                     <p class="text-2xl font-display font-semibold text-[#ef4444]">{{ $stats['totalEscalations'] }}</p>
                 </div>
                 <div class="w-10 h-10 bg-[#fef2f2] rounded-lg flex items-center justify-center group-hover:bg-[#fee2e2] transition-colors">
@@ -55,12 +55,12 @@
         <div class="vercel-card group">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-[#71717a] mb-1">Skor Penyelesaian</p>
-                    <p class="text-2xl font-display font-semibold text-[#171717]">{{ number_format($stats['systemCompletionRate'], 1) }}%</p>
-                    <p class="text-xs text-[#71717a] mt-1">Eskalasi: {{ number_format($stats['escalationCompletionRate'], 1) }}%</p>
+                    <p class="text-sm text-[#71717a] mb-1">Skor Penyelesaian Manager</p>
+                    <p class="text-2xl font-display font-semibold text-[#171717]">{{ number_format($stats['escalationCompletionRate'], 1) }}%</p>
+                    <p class="text-xs text-[#71717a] mt-1">{{ $stats['completedEscalations'] }} dari {{ $stats['totalEscalations'] }} eskalasi selesai</p>
                 </div>
                 <div class="w-10 h-10 bg-[#f4f4f5] rounded-lg flex items-center justify-center group-hover:bg-[#e4e4e7] transition-colors">
-                    <svg class="w-5 h-5 text-[#71717a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 text-[#71717a]" fi ll="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                     </svg>
                 </div>

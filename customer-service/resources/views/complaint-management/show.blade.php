@@ -290,54 +290,41 @@
 
                 <!-- CS Response Section -->
                 @if(in_array(auth()->user()->role, ['cs', 'admin']) && $complaint->handled_by && !$complaint->escalation_to)
-                <div class="md:col-span-2">
+                <div class="md:col-span-2" id="cs-response">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-comment-dots mr-2 text-blue-600"></i>Response untuk Customer
+                        <i class="fas fa-comment-dots mr-2 text-blue-600"></i>Respon untuk Customer
                     </label>
-                    
+
                     @if($complaint->cs_response)
-                        <!-- Display existing response -->
-                        <div class="px-3 py-2 border border-green-300 rounded-md bg-green-50 text-gray-900 min-h-[80px] mb-3">
+                        <div class="px-3 py-2 border border-green-300 rounded-md bg-green-50 text-gray-900 min-h-[60px] mb-3 text-sm">
                             {{ $complaint->cs_response }}
                             @if($complaint->cs_response_updated_at)
-                                <div class="text-xs text-gray-500 mt-2">
+                                <div class="text-xs text-gray-500 mt-1">
                                     <i class="fas fa-clock mr-1"></i>Diupdate: {{ $complaint->cs_response_updated_at->format('d M Y, H:i') }}
                                 </div>
                             @endif
                         </div>
-                        
-                        <!-- Edit response form - hanya tampil jika status belum selesai -->
-                        @if($complaint->status !== 'selesai')
-                        <form method="POST" action="{{ route('complaints.update-response', $complaint) }}" class="space-y-3">
-                            @csrf
-                            @method('PATCH')
-                            <textarea name="cs_response" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Update response untuk customer...">{{ $complaint->cs_response }}</textarea>
-                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
-                                <i class="fas fa-edit mr-2"></i>Update Response
-                            </button>
-                        </form>
-                        @endif
-                    @else
-                        <!-- Add new response form - hanya tampil jika status belum selesai -->
-                        @if($complaint->status !== 'selesai')
-                        <form method="POST" action="{{ route('complaints.update-response', $complaint) }}" class="space-y-3">
-                            @csrf
-                            @method('PATCH')
-                            <textarea name="cs_response" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Tulis response untuk customer..." required></textarea>
-                            <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm">
-                                <i class="fas fa-paper-plane mr-2"></i>Kirim Response
-                            </button>
-                        </form>
-                        @endif
+                    @endif
+
+                    @if($complaint->status !== 'selesai')
+                    <form method="POST" action="{{ route('complaints.update-response', $complaint) }}" class="space-y-2">
+                        @csrf
+                        @method('PATCH')
+                        <textarea name="cs_response" rows="3"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                            placeholder="Tulis respon untuk customer...">{{ $complaint->cs_response }}</textarea>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm inline-flex items-center">
+                            <i class="fas fa-save mr-2"></i>{{ $complaint->cs_response ? 'Update Respon' : 'Simpan Respon' }}
+                        </button>
+                    </form>
                     @endif
                 </div>
                 @elseif($complaint->cs_response)
-                <!-- Display response for non-CS users -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         <i class="fas fa-comment-dots mr-2 text-blue-600"></i>Response CS
                     </label>
-                    <div class="px-3 py-2 border border-green-300 rounded-md bg-green-50 text-gray-900 min-h-[80px]">
+                    <div class="px-3 py-2 border border-green-300 rounded-md bg-green-50 text-gray-900 min-h-[80px] text-sm">
                         {{ $complaint->cs_response }}
                         @if($complaint->cs_response_updated_at)
                             <div class="text-xs text-gray-500 mt-2">
@@ -397,14 +384,21 @@
                             @if(!$complaint->escalation_to)
                                 <!-- Jika tidak sedang dieskalasi (belum dieskalasi atau sudah dikembalikan ke CS) -->
                                 @if(auth()->user()->role === 'cs' && $complaint->handled_by === auth()->id())
-                                    <form method="POST" action="{{ route('complaints.update-status', $complaint) }}" class="inline-block">
-                                        @csrf
-                                        @method('PATCH')
-                                        <input type="hidden" name="status" value="selesai">
-                                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                                            <i class="fas fa-check mr-2"></i>Selesaikan
-                                        </button>
-                                    </form>
+                                    @if($complaint->cs_response)
+                                        <form method="POST" action="{{ route('complaints.update-status', $complaint) }}" class="inline-block">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="status" value="selesai">
+                                            <input type="hidden" name="cs_response" value="{{ $complaint->cs_response }}">
+                                            <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors inline-flex items-center" onclick="return confirm('Tandai komplain ini sebagai selesai?')">
+                                                <i class="fas fa-check mr-2"></i>Selesaikan
+                                            </button>
+                                        </form>
+                                    @else
+                                        <span class="px-4 py-2 bg-gray-200 text-gray-500 rounded-lg text-sm cursor-not-allowed inline-flex items-center" title="Isi respon terlebih dahulu sebelum menyelesaikan">
+                                            <i class="fas fa-lock mr-2"></i>Selesaikan
+                                        </span>
+                                    @endif
                                     
                                     <a href="{{ route('complaints.escalate-form', $complaint) }}" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors inline-flex items-center">
                                         <i class="fas fa-exclamation-triangle mr-2"></i>Eskalasi ke Manager
@@ -452,14 +446,34 @@
                                 
                                 @if(auth()->user()->role === 'cs')
                                     @if($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action: resolved'))
-                                        <!-- Manager sudah menangani, CS dapat langsung menyelesaikan -->
-                                        <div class="flex flex-col space-y-3">
-                                            <form method="POST" action="{{ route('complaints.update-status', $complaint) }}" class="inline-block">
+                                        {{-- Manager sudah menangani, CS harus isi komentar lalu selesaikan --}}
+                                        <div class="w-full">
+                                            <form method="POST" action="{{ route('complaints.update-status', $complaint) }}" class="space-y-3" id="form-selesaikan-escalated">
                                                 @csrf
                                                 @method('PATCH')
                                                 <input type="hidden" name="status" value="selesai">
-                                                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                                                    <i class="fas fa-check mr-2"></i>Selesaikan Komplain
+
+                                                <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+                                                    <div class="flex items-center mb-3">
+                                                        <i class="fas fa-comment-check text-green-600 mr-2"></i>
+                                                        <span class="text-sm font-semibold text-gray-800">Komentar Penutup CS <span class="text-red-500">*</span></span>
+                                                    </div>
+                                                    <textarea
+                                                        name="cs_response"
+                                                        id="cs-closing-response"
+                                                        rows="3"
+                                                        required
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm resize-none"
+                                                        placeholder="Tulis komentar penutup untuk customer sebelum menyelesaikan komplain ini...">{{ $complaint->cs_response }}</textarea>
+                                                    <p class="text-xs text-gray-500 mt-1">
+                                                        <i class="fas fa-info-circle mr-1"></i>Komentar ini wajib diisi dan akan dikirim ke customer sebagai respons akhir.
+                                                    </p>
+                                                </div>
+
+                                                <button type="submit"
+                                                    class="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors inline-flex items-center font-medium shadow-sm"
+                                                    onclick="return validateAndConfirm()">
+                                                    <i class="fas fa-check-circle mr-2"></i>Selesaikan Komplain
                                                 </button>
                                             </form>
                                         </div>
@@ -469,6 +483,7 @@
                                         </div>
                                     @endif
                                 @endif
+
                             @endif
                         @endif
                     @endif
@@ -481,5 +496,46 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const responseSection = document.getElementById('cs-response');
+    const textarea = responseSection ? responseSection.querySelector('textarea[name="cs_response"]') : null;
+
+    // Auto-scroll and focus textarea if arrived via #cs-response anchor
+    if (window.location.hash === '#cs-response' && responseSection) {
+        setTimeout(function () {
+            responseSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (textarea) textarea.focus();
+        }, 200);
+    }
+
+    // Auto-scroll to closing form if manager already resolved
+    const closingForm = document.getElementById('form-selesaikan-escalated');
+    if (closingForm) {
+        const closingTextarea = document.getElementById('cs-closing-response');
+        if (closingTextarea) {
+            closingTextarea.addEventListener('input', function () {
+                this.style.borderColor = this.value.trim() ? '#16a34a' : '#d1d5db';
+            });
+        }
+    }
+});
+
+function validateAndConfirm() {
+    const textarea = document.getElementById('cs-closing-response');
+    if (!textarea) return true;
+
+    const val = textarea.value.trim();
+    if (!val) {
+        textarea.focus();
+        textarea.style.borderColor = '#dc2626';
+        textarea.style.boxShadow = '0 0 0 2px rgba(220,38,38,0.2)';
+        alert('Komentar penutup CS wajib diisi sebelum menyelesaikan komplain!');
+        return false;
+    }
+    return confirm('Pastikan komentar sudah sesuai. Tandai komplain ini sebagai selesai?');
+}
+</script>
 
 @endsection

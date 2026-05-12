@@ -32,7 +32,7 @@
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 mb-1">WhatsApp</h3>
                             <p class="text-gray-600 mb-2">{{ $contacts['whatsapp'] }}</p>
-                            <a href="https://wa.me/{{ $contacts['whatsapp'] }}" target="_blank" class="text-green-600 hover:text-green-800 font-medium">Chat WhatsApp</a>
+                            <a href="https://wa.me/62{{ substr($contacts['whatsapp'], 1) }}" target="_blank" class="text-green-600 hover:text-green-800 font-medium">Chat WhatsApp</a>
                         </div>
                     </div>
 
@@ -110,7 +110,7 @@
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-            <a href="https://wa.me/{{ $contacts['whatsapp'] }}" target="_blank" 
+            <a href="https://wa.me/62{{ substr($contacts['whatsapp'], 1) }}" target="_blank" 
                class="group block p-6 bg-green-50 hover:bg-green-100 rounded-xl transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
                 <div class="text-center">
                     <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">

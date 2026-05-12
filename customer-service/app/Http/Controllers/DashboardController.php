@@ -28,8 +28,6 @@ class DashboardController extends Controller
                 return redirect()->route('manager.dashboard');
             case 'cs':
                 return redirect()->route('cs.dashboard');
-            case 'hrd':
-                return redirect()->route('hrd.dashboard');
             case 'customer':
                 return redirect()->route('home');
             default:
@@ -49,7 +47,7 @@ class DashboardController extends Controller
             'newComplaints' => Complaint::where('status', 'baru')->count(),
             'processingComplaints' => Complaint::where('status', 'diproses')->count(),
             'completedComplaints' => Complaint::where('status', 'selesai')->count(),
-            'completionRate' => Complaint::count() > 0 ? round((Complaint::where('status', 'selesai')->count() / Complaint::count()) * 100) : 0,
+            'completionRate' => Complaint::count() > 0 ? round((Complaint::where('status', 'selesai')->count() / Complaint::count()) * 100, 1) : 0,
             'avgResolutionTime' => $this->getAverageResolutionTime(),
         ];
         
@@ -141,13 +139,30 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
         
+        $myTotal   = Complaint::where(function($q) use ($user) {
+                         $q->where('handled_by', $user->id)
+                           ->orWhere('resolved_by', $user->id)
+                           ->orWhere('escalated_by', $user->id);
+                     })->count();
+
+        $myDone    = Complaint::where(function($q) use ($user) {
+                         $q->where('handled_by', $user->id)
+                           ->orWhere('resolved_by', $user->id)
+                           ->orWhere('escalated_by', $user->id);
+                     })->where('status', 'selesai')->count();
+
+        $myActive  = Complaint::where('handled_by', $user->id)
+                         ->whereIn('status', ['baru','diproses'])->count();
+
         $stats = [
-            'totalComplaints' => Complaint::count(),
-            'newComplaints' => Complaint::where('status', 'baru')->whereNull('handled_by')->count(),
-            'processingComplaints' => Complaint::where('status', 'diproses')->count(),
-            'completedComplaints' => Complaint::where('status', 'selesai')->count(),
-            'myHandledComplaints' => Complaint::where('handled_by', $user->id)->count(),
-            'myResolvedComplaints' => Complaint::where('resolved_by', $user->id)->count(),
+            'totalComplaints'       => Complaint::count(),
+            'newComplaints'         => Complaint::where('status', 'baru')->whereNull('handled_by')->count(),
+            'processingComplaints'  => Complaint::where('status', 'diproses')->count(),
+            'completedComplaints'   => Complaint::where('status', 'selesai')->count(),
+            'myHandledComplaints'   => $myTotal,
+            'myResolvedComplaints'  => $myDone,
+            'myActiveComplaints'    => $myActive,
+            'myCompletionRate'      => $myTotal > 0 ? round(($myDone / $myTotal) * 100, 1) : 0,
         ];
         
         // CS hanya melihat:

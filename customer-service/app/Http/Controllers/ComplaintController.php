@@ -14,9 +14,14 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class ComplaintController extends Controller
 {
+    /**
+     * Menampilkan halaman daftar komplain untuk role CS, Manager, dan Admin.
+     * Dilengkapi dengan fitur filter (status, kategori) dan pencarian.
+     */
     public function index(Request $request)
     {
-        $user = auth()->user();
+        $user = auth()->user(); // Mengambil data user yang sedang login
+        // Query untuk mengambil data komplain beserta relasinya dari tabel lain (Customer, Kategori, Staff penangan, dll)
         $query = Complaint::with(['customer.user', 'category', 'handledBy', 'resolvedBy', 'managerClaimedBy']);
         
         // All roles can see all complaints for monitoring
@@ -57,6 +62,11 @@ class ComplaintController extends Controller
         return view('complaint-management.index', compact('complaints', 'categories', 'csHasActiveComplaint'));
     }
 
+    /**
+     * Menghasilkan dan mendownload laporan komplain dalam format dokumen PDF.
+     * Role CS hanya mengekspor data komplain yang ditanganinya sendiri, 
+     * sedangkan Manager/Admin dapat mengekspor semua data berdasarkan filter.
+     */
     public function exportPdf(Request $request)
     {
         $query = Complaint::with(['customer.user', 'category', 'handledBy', 'resolvedBy', 'managerClaimedBy']);
@@ -120,6 +130,9 @@ class ComplaintController extends Controller
         return $pdf->download($filename);
     }
 
+    /**
+     * Menampilkan halaman riwayat daftar komplain khusus untuk Customer yang sedang login.
+     */
     public function customerComplaints()
     {
         $user = Auth::user();
@@ -144,8 +157,13 @@ class ComplaintController extends Controller
         return view('complaint-management.create', compact('categories'));
     }
     
+    /**
+     * Memproses penyimpanan data komplain baru yang dikirimkan oleh Customer.
+     * Termasuk memvalidasi formulir, mencegah spam, dan menyimpan file media (foto/video).
+     */
     public function store(Request $request)
     {
+        // 1. Memeriksa kecocokan data formulir dengan aturan yang ditentukan
         $request->validate([
             'complaint_category_id' => 'required|exists:complaint_categories,id',
             'description' => 'required|string|max:200',
@@ -180,6 +198,17 @@ class ComplaintController extends Controller
             }
         }
 
+        // Block new complaint if customer already has an active (baru/diproses) complaint
+        $activeComplaint = Complaint::where('customer_id', $customer->id)
+            ->whereIn('status', ['baru', 'diproses'])
+            ->first();
+
+        if ($activeComplaint) {
+            return redirect()->route('home')
+                ->with('error', 'Anda masih memiliki komplain yang belum selesai (ID #' . $activeComplaint->id . ', Status: ' . ucfirst($activeComplaint->status) . '). Silakan tunggu hingga komplain tersebut diselesaikan sebelum membuat komplain baru.')
+                ->withFragment('buat-komplain');
+        }
+
         // Check for duplicate complaint submission (within last 5 minutes)
         $recentComplaint = Complaint::where('customer_id', $customer->id)
             ->where('complaint_category_id', $request->complaint_category_id)
@@ -188,8 +217,9 @@ class ComplaintController extends Controller
             ->first();
 
         if ($recentComplaint) {
-            return redirect()->route('customer.complaints')
-                ->with('info', 'Komplain yang sama sudah dikirim sebelumnya. Silakan tunggu respons dari tim CS kami atau buat komplain dengan detail yang berbeda.');
+            return redirect()->route('home')
+                ->with('info', 'Komplain yang sama sudah dikirim sebelumnya. Silakan tunggu respons dari tim CS kami atau buat komplain dengan detail yang berbeda.')
+                ->withFragment('buat-komplain');
         }
 
         // Check for too many complaints in short time (rate limiting)
@@ -198,8 +228,9 @@ class ComplaintController extends Controller
             ->count();
 
         if ($recentComplaintsCount >= 3) {
-            return redirect()->route('customer.complaints')
-                ->with('warning', 'Anda telah mengirim terlalu banyak komplain dalam waktu singkat. Silakan tunggu beberapa menit sebelum mengirim komplain baru.');
+            return redirect()->route('home')
+                ->with('warning', 'Anda telah mengirim terlalu banyak komplain dalam waktu singkat. Silakan tunggu beberapa menit sebelum mengirim komplain baru.')
+                ->withFragment('buat-komplain');
         }
 
         // Handle optional media uploads
@@ -229,6 +260,10 @@ class ComplaintController extends Controller
         return redirect()->route('customer.complaints')->with('success', 'Komplain Anda berhasil dikirim! Tim CS kami akan segera menghubungi Anda.');
     }
     
+    /**
+     * Menampilkan halaman detail spesifik dari satu buah komplain.
+     * Customer hanya bisa melihat detail komplain miliknya sendiri, staff bebas melihat semuanya.
+     */
     public function show(Complaint $complaint)
     {
         // Customer can view only their own complaint in a simplified view
@@ -276,6 +311,10 @@ class ComplaintController extends Controller
     }
 
 
+    /**
+     * Menampilkan halaman formulir komplain jika diakses dari halaman depan situs (publik).
+     * Secara otomatis memeriksa apakah pengguna sudah login, jika belum maka diarahkan ke halaman login.
+     */
     public function createPublic()
     {
         // Check if user is authenticated
@@ -298,6 +337,10 @@ class ComplaintController extends Controller
         return $this->store($request);
     }
     
+    /**
+     * Fungsi bagi Staff CS untuk 'Mengambil/Mengklaim' hak penanganan sebuah komplain.
+     * Status komplain yang diambil akan berubah dari 'baru' menjadi 'diproses'.
+     */
     public function takeComplaint(Complaint $complaint)
     {
         // Check if complaint is already taken
@@ -329,6 +372,10 @@ class ComplaintController extends Controller
             ->with('success', 'Komplain berhasil diambil dan status diubah ke diproses');
     }
 
+    /**
+     * Fungsi bagi Staff CS untuk mengembalikan/melepas komplain yang sedang ia tangani.
+     * Statusnya kembali 'baru' agar nantinya bisa diambil secara bebas oleh CS yang lain.
+     */
     public function releaseComplaint(Complaint $complaint)
     {
         // Check if complaint is handled by current CS
@@ -355,6 +402,10 @@ class ComplaintController extends Controller
             ->with('success', 'Komplain berhasil dikembalikan dan dapat diambil oleh CS lain');
     }
 
+    /**
+     * CS menulis dan memberikan pembaruan respon/tanggapan atas komplain milik pelanggan.
+     * Respon teks ini nantinya bisa dilihat langsung oleh pelanggan dari portal pelanggan.
+     */
     public function updateResponse(Request $request, Complaint $complaint)
     {
         // Cek apakah komplain sudah selesai
@@ -390,6 +441,10 @@ class ComplaintController extends Controller
         return view('complaint-management.escalate-form', compact('complaint'));
     }
 
+    /**
+     * Fungsi bagi CS untuk mengeskalasi (meneruskan masalah) komplain ke tingkat Manager.
+     * Digunakan apabila komplain terlalu rumit atau membutuhkan wewenang dari pihak yang lebih tinggi.
+     */
     public function escalateToManager(Request $request, Complaint $complaint)
     {
         $request->validate([
@@ -459,6 +514,10 @@ class ComplaintController extends Controller
         return view('complaint-management.manager-action-form', compact('complaint'));
     }
 
+    /**
+     * Fungsi bagi Manager untuk memberikan tindakan/keputusan akhir atas komplain yang dieskalasi kepadanya.
+     * Manager bisa menandainya sebagai 'Sudah Ditangani' atau justru 'Dikembalikan ke CS'.
+     */
     public function managerAction(Request $request, Complaint $complaint)
     {
         $request->validate([
@@ -525,6 +584,9 @@ class ComplaintController extends Controller
     
     /**
      * Generate dynamic PDF filename based on filters and date
+     */
+    /**
+     * Fungsi internal untuk menghasilkan format nama file dinamis saat export ke PDF (contoh: Laporan-Komplain_{tanggal}_{status}.pdf).
      */
     private function generatePdfFilename($request)
     {
@@ -633,10 +695,17 @@ class ComplaintController extends Controller
         return redirect()->back()->with('success', 'Eskalasi berhasil dilepas dan dapat diambil manager lain.');
     }
 
+    /**
+     * Mengatur proses pembaruan pergerakan status komplain pengguna (contoh: diproses menjadi selesai).
+     * Saat status diubah menjadi 'selesai', sistem juga mencatat waktu selesai dan mendata siapa staff yang menyelesaikannya.
+     */
     public function updateStatus(Request $request, Complaint $complaint)
     {
         $request->validate([
-            'status' => 'required|in:baru,diproses,selesai'
+            'status' => 'required|in:baru,diproses,selesai',
+            'cs_response' => 'required_if:status,selesai|nullable|string|max:1000',
+        ], [
+            'cs_response.required_if' => 'Respon untuk customer wajib diisi sebelum menyelesaikan komplain.',
         ]);
 
         $user = auth()->user();
@@ -660,15 +729,20 @@ class ComplaintController extends Controller
             'status' => $request->status,
         ];
 
-        // If status is changed to 'selesai', record resolution
+        // If status is changed to 'selesai', record resolution and save cs_response
         if ($request->status === 'selesai' && $complaint->status !== 'selesai') {
             $updateData['resolved_at'] = now();
             $updateData['resolved_by'] = auth()->id();
+            // Save the closing comment/response from CS
+            if ($request->filled('cs_response')) {
+                $updateData['cs_response'] = $request->cs_response;
+                $updateData['cs_response_updated_at'] = now();
+            }
         }
 
         $complaint->update($updateData);
 
-        return redirect()->back()->with('success', 'Status komplain berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Komplain berhasil diselesaikan dan komentar CS telah disimpan.');
     }
     
 }

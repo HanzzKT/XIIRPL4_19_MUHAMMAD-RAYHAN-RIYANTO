@@ -37,20 +37,17 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Cari</label>
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Nama atau email..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div>
+            @if(auth()->user()->role === 'admin')
             <div class="w-48">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Filter Role</label>
                 <select name="role" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    @if(auth()->user()->role === 'admin')
-                        <option value="">Semua Role</option>
-                        <option value="cs" {{ request('role') == 'cs' ? 'selected' : '' }}>Customer Service</option>
-                        <option value="manager" {{ request('role') == 'manager' ? 'selected' : '' }}>Manager</option>
-                        <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                    @else
-                        <option value="">Semua CS</option>
-                        <option value="cs" {{ request('role') == 'cs' ? 'selected' : '' }}>Customer Service</option>
-                    @endif
+                    <option value="">Semua Role</option>
+                    <option value="cs" {{ request('role') == 'cs' ? 'selected' : '' }}>Customer Service</option>
+                    <option value="manager" {{ request('role') == 'manager' ? 'selected' : '' }}>Manager</option>
+                    <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                 </select>
             </div>
+            @endif
             <div class="flex items-end space-x-2">
                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200">
                     Cari
@@ -68,6 +65,7 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -76,8 +74,11 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($users as $user)
+                    @forelse($users as $index => $user)
                     <tr class="hover:bg-gray-50 transition-colors duration-200">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                            {{ $users->firstItem() + $index }}
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="flex-shrink-0 h-10 w-10">
@@ -168,7 +169,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                             </svg>

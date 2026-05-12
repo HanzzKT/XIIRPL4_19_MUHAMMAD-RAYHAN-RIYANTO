@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Auth;
 
 class PublicController extends Controller
 {
+    /**
+     * Menampilkan halaman utama (beranda/index) untuk akses publik dan Customer.
+     * Secara otomatis mengumpulkan data formulir dan statistik riwayat komplain jika pengunjung sudah login sebagai Customer.
+     */
     public function index(Request $request)
     {
         // Redirect staff (cs, manager, admin) to their respective dashboards
@@ -27,6 +31,8 @@ class PublicController extends Controller
         $categories = ComplaintCategory::where('is_active', true)->get();
 
         $complaints = collect();
+        $hasActiveComplaint = false;
+        $activeComplaint = null;
         if (Auth::check() && Auth::user()->role === 'customer') {
             $customer = Auth::user()->customer;
             if ($customer) {
@@ -45,12 +51,37 @@ class PublicController extends Controller
                 }
 
                 $complaints = $query->paginate(10)->withQueryString();
+
+                // Check if customer has an active (not yet completed) complaint
+                $activeComplaint = Complaint::with(['category'])
+                    ->where('customer_id', $customer->id)
+                    ->whereIn('status', ['baru', 'diproses'])
+                    ->latest()
+                    ->first();
+                $hasActiveComplaint = $activeComplaint !== null;
             }
         }
 
-        return view('public-pages.index', compact('categories', 'complaints'));
+        // Customer completion stats
+        $customerStats = ['total' => 0, 'done' => 0, 'active' => 0, 'rate' => 0];
+        if (Auth::check() && Auth::user()->role === 'customer' && isset($customer) && $customer) {
+            $cTotal  = Complaint::where('customer_id', $customer->id)->count();
+            $cDone   = Complaint::where('customer_id', $customer->id)->where('status', 'selesai')->count();
+            $cActive = Complaint::where('customer_id', $customer->id)->whereIn('status', ['baru','diproses'])->count();
+            $customerStats = [
+                'total'  => $cTotal,
+                'done'   => $cDone,
+                'active' => $cActive,
+                'rate'   => $cTotal > 0 ? round(($cDone / $cTotal) * 100, 1) : 0,
+            ];
+        }
+
+        return view('public-pages.index', compact('categories', 'complaints', 'hasActiveComplaint', 'activeComplaint', 'customerStats'));
     }
 
+    /**
+     * Menampilkan halaman Frequently Asked Questions (FAQ) atau kumpulan pertanyaan yang sering ditanyakan pelanggan.
+     */
     public function faq()
     {
         // Redirect staff (cs, manager, admin) to their respective dashboards
@@ -92,6 +123,9 @@ class PublicController extends Controller
         return view('public-pages.faq', compact('faqs'));
     }
 
+    /**
+     * Menampilkan halaman informasi Hubungi Kami berisi kontak penting Perusahaan (WhatsApp, Email, Jam Operasional).
+     */
     public function contact()
     {
         // Redirect staff (cs, manager, admin) to their respective dashboards
@@ -108,9 +142,9 @@ class PublicController extends Controller
         }
         
         $contacts = [
-            'whatsapp' => '081234567890',
+            'whatsapp' => '0813-8855-6335',
             'email' => 'cs@karunialaris.com',
-            'address' => 'Jl. Raya Industri No. 123, Jakarta Timur',
+            'address' => 'Jl. Raya Pekayon No.50, RT.004/RW.001, Jaka Setia, Kec. Bekasi Sel., Kota Bks, Jawa Barat',
             'hours' => [
                 'senin_jumat' => '08:00 - 17:00',
                 'sabtu' => '08:00 - 15:00',
@@ -121,6 +155,9 @@ class PublicController extends Controller
         return view('public-pages.contact', compact('contacts'));
     }
 
+    /**
+     * Menampilkan halaman edukasi edukasi tentang panduan Langkah-langkah dan Alur Cara Membuat Komplain di sistem.
+     */
     public function complaintFlow()
     {
         // Redirect staff (cs, manager, admin) to their respective dashboards

@@ -22,7 +22,7 @@
     </div>
 
     <!-- Main Statistics -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
         <!-- Total Complaints -->
         <div class="vercel-card group">
             <div class="flex items-center justify-between">
@@ -93,6 +93,22 @@
                 <div class="w-10 h-10 bg-[#fff7ed] rounded-lg flex items-center justify-center group-hover:bg-[#ffedd5] transition-colors">
                     <svg class="w-5 h-5 text-[#f59e0b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skor Penyelesaian -->
+        <div class="vercel-card group">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-[#71717a] mb-1">Skor Penyelesaian</p>
+                    <p class="text-2xl font-display font-semibold text-[#171717]">{{ number_format($stats['completionRate'], 1) }}%</p>
+                    <p class="text-xs text-[#71717a] mt-1">{{ $stats['completedComplaints'] }} dari {{ $stats['totalComplaints'] }} selesai</p>
+                </div>
+                <div class="w-10 h-10 bg-[#f4f4f5] rounded-lg flex items-center justify-center group-hover:bg-[#e4e4e7] transition-colors">
+                    <svg class="w-5 h-5 text-[#71717a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                     </svg>
                 </div>
             </div>

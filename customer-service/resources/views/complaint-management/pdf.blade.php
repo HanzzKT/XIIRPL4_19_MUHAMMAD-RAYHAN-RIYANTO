@@ -12,31 +12,77 @@
         }
         .header {
             position: fixed;
-            top: -50px;
+            top: -120px;
             left: 0;
             right: 0;
-            height: 60px;
-            text-align: center;
-            border-bottom: 1px solid #ddd;
-            padding: 3px 0 3px 0;
+            height: 120px;
+            padding: 6px 10px;
             background: #fff;
         }
-        .header h1 {
-            margin: 28px 0 0 0;
-            font-size: 14px;
-            color: #333;
+        .header-inner {
+            display: table;
+            width: 100%;
         }
-        .header p {
-            margin: 1px 0 0 0;
+        .header-logo-cell {
+            display: table-cell;
+            vertical-align: middle;
+            width: 75px;
+        }
+        .header-logo-cell img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+        }
+        .header-top-row {
+            display: table;
+            width: 100%;
+            border-bottom: 1.5px solid #000000ff;
+            padding-bottom: 4px;
+            margin-bottom: 4px;
+        }
+        .header-text-cell {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: center;
+            padding: 0 10px;
+        }
+        .header-company {
+            font-size: 16px;
+            font-weight: bold;
+            color: #000000ff;
+            margin: 0 0 1px 0;
+            letter-spacing: 0.5px;
+        }
+        .header-address {
+            font-size: 8px;
+            color: #555;
+            margin: 0;
+            line-height: 1.3;
+        }
+        .header-bottom-row {
+            text-align: center;
+        }
+        .header-report-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #222;
+            margin: 0 0 1px 0;
+            letter-spacing: 0.3px;
+        }
+        .header-date {
+            font-size: 8.5px;
             color: #666;
-            font-size: 9px;
+            margin: 0;
+        }
+        .header-spacer-cell {
+            display: table-cell;
+            vertical-align: middle;
+            width: 75px;
         }
         .meta-info {
             margin-top: 2px;
             margin-bottom: 3px;
             padding: 2px 3px;
-            background-color: #f5f5f5;
-            border-radius: 5px;
         }
         .meta-info p {
             display: block;
@@ -119,45 +165,32 @@
         .priority-high { background-color: transparent; color: #000; }
         .priority-critical { background-color: transparent; color: #000; }
         .footer {
+        /* ===== PAGE FOOTER ===== */
+        .page-footer {
             position: fixed;
-            bottom: -130px;
+            bottom: -50px;
             left: 0;
             right: 0;
-            height: 130px;
-            font-size: 10px;
-            color: #666;
-            border-top: 1px solid #ddd;
+            height: 50px;
             background: #fff;
+            border-top: 1.5px solid #000;
+            padding: 6px 10px 0 10px;
+            font-size: 8px;
+            color: #444;
         }
-        .footer .signature {
-            position: absolute;
-            right: 30px;
-            bottom: 86px;
-            width: auto;
+        .page-footer-inner {
+            display: table;
+            width: 100%;
+        }
+        .page-footer-left {
+            display: table-cell;
+            text-align: left;
+            vertical-align: middle;
+        }
+        .page-footer-right {
+            display: table-cell;
             text-align: right;
-        }
-        .footer .signature .sig-line {
-            height: 32px;
-            border-bottom: 1px solid #333;
-            margin-bottom: 8px;
-        }
-        .footer .signature .sig-name {
-            font-weight: bold;
-            color: #333;
-            margin-top: 2px;
-        }
-        .footer .signature .sig-role {
-            font-size: 9px;
-            color: #555;
-        }
-        .footer .disclaimer {
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 14px;
-            text-align: center;
-            line-height: 1.3;
-            font-size: 9px;
+            vertical-align: middle;
         }
         .truncate {
             max-width: 150px;
@@ -181,7 +214,7 @@
         
         /* Page margins to allocate space for header and footer */
         @page {
-            margin: 70px 28px 8px 28px; /* top right bottom left */
+            margin: 135px 28px 50px 28px; /* top right bottom left */
             size: A4;
         }
         /* Signature section: keep signature + disclaimer together and align to right */
@@ -212,19 +245,83 @@
             font-size: 9px;
             color: #000;
         }
+        .signature-block-wrapper {
+            display: block;
+            width: 100%;
+            padding-bottom: 10px;
+        }
         .disclaimer { 
-            margin-top: 3px; 
+            margin-top: 18px; 
             font-size: 7.5px; 
-            line-height: 1.0;
+            line-height: 1.4;
             text-align: center; 
-            color: #000;
+            color: #555;
         }
     </style>
 </head>
 <body>
+    @php
+        $footerDivision = trim(auth()->user()->division ?? '');
+        $footerRole     = strtolower(auth()->user()->role ?? '');
+        // Admin tidak menampilkan divisi
+        $footerShowDivision = ($footerRole !== 'admin') ? ($footerDivision ?: ($footerRole === 'manager' ? 'Manager' : '')) : '';
+    @endphp
+    <script type="text/php">
+        if (isset($pdf)) {
+            $w      = $pdf->get_width();
+            $h      = $pdf->get_height();
+            $font   = $fontMetrics->getFont("Arial");
+            $fontB  = $fontMetrics->getFont("Arial", "bold");
+            $black  = array(0, 0, 0);
+            $grey   = array(0.27, 0.27, 0.27);
+
+            // Posisi Y garis footer: 28px dari bawah (setara margin bawah)
+            $lineY  = $h - 28;
+
+            // Margin kiri dan kanan bernilai 28px sesuai setting @page
+            $marginLeft = 28;
+            $marginRight = 28;
+
+            // Gambar garis horizontal yang lebarnya disesuaikan margin
+            $pdf->line($marginLeft, $lineY, $w - $marginRight, $lineY, $black, 0.75);
+
+            // Teks divisi di pojok kiri bawah (sejajar garis) — hanya untuk manager/cs, tidak untuk admin
+            $division = "{{ addslashes($footerShowDivision) }}";
+            if ($division) {
+                $pdf->page_text($marginLeft, $lineY + 5, "Divisi: " . $division, $fontB, 7, $grey);
+            }
+
+            // Nomor halaman di pojok kanan bawah (sejajar ujung kanan garis)
+            $pdf->page_text($w - $marginRight - 55, $lineY + 5, "Halaman {PAGE_NUM} / {PAGE_COUNT}", $font, 7, $grey);
+        }
+    </script>
+
     <div class="header">
-        <h1>LAPORAN KOMPLAIN PELANGGAN PT Karunia Laris Abadi</h1>
-        <p>Tanggal Cetak: {{ date('d F Y, H:i') }} WIB</p>
+        @php
+            $logoPath = storage_path('app/public/WhatsApp Image 2026-04-02 at 09.27.25.jpeg');
+            $logoBase64 = '';
+            if (file_exists($logoPath)) {
+                $logoBase64 = 'data:image/jpeg;base64,' . base64_encode(file_get_contents($logoPath));
+            }
+        @endphp
+        {{-- Baris atas: logo + nama perusahaan + alamat, dengan garis bawah sejajar bawah logo --}}
+        <div class="header-top-row">
+            <div class="header-logo-cell" style="display: table-cell; vertical-align: middle; width: 75px;">
+                @if($logoBase64)
+                    <img src="{{ $logoBase64 }}" alt="Logo PT Karunia Laris Abadi">
+                @endif
+            </div>
+            <div class="header-text-cell">
+                <p class="header-company">Karunia Laris Abadi</p>
+                <p class="header-address">Jl. Raya Pekayon No.50, RT.004/RW.001, Jaka Setia, Kec. Bekasi Sel., Kota Bks, Jawa Barat</p>
+            </div>
+            <div style="display: table-cell; width: 75px;"></div>
+        </div>
+        {{-- Baris bawah: judul laporan + tanggal --}}
+        <div class="header-bottom-row">
+            <p class="header-report-title">LAPORAN KOMPLAIN PELANGGAN</p>
+            <p class="header-date">Tanggal Cetak: {{ date('d F Y, H:i') }} WIB</p>
+        </div>
     </div>
 
     <div class="content-spacer"></div>
@@ -353,8 +450,8 @@
 
     @php
         $sigName = trim(auth()->user()->name ?? '');
+        $sigDivision = trim(auth()->user()->division ?? '');
         $nameLen = mb_strlen($sigName ?? '');
-        // width in ch so it approximates the name length; clamp to reasonable bounds
         $lineCh = max(16, min(50, (int) ceil($nameLen * 1.15)));
         $roleMap = [
             'cs' => 'CS',
@@ -369,26 +466,24 @@
     @endphp
     <div class="signature-section" style="text-align: right;">
         @php
-            // Signature width that follows name length (approx.) for manager
             $lineNamePx = max(60, min(600, (int) ceil(($nameLen ?: 1) * 9.0)));
         @endphp
-        <div class="signature-block" style="display: inline-block; text-align: center;">
-            @if($isManagerOrAdmin)
-                <div class="sig-role" style="font-weight: bold;">Mengetahui</div>
-                <div class="sig-role" style="margin-top: 2px;">{{ $roleLabel }}</div>
-                <div style="display: inline-block; margin-top: 34px;">
-                    <span style="display: inline-block; white-space: nowrap; border-top: 1px solid #333; padding-top: 3px; font-weight: bold; font-size: 9px;">{{ $sigName }}</span>
-                </div>
-            @else
-                <div class="sig-line" style="width: 100%;"></div>
-                <div class="sig-name">{{ $sigName }}</div>
-                <div class="sig-role">{{ $roleText }}</div>
-            @endif
-        </div>
-        <div class="disclaimer">
-            <p>Laporan ini digenerate secara otomatis oleh Sistem Customer Service PT Karunia Laris Abadi</p>
-            <p>Untuk informasi lebih lanjut, hubungi tim IT atau Customer Service</p>
-        </div>
+        <div class="signature-block-wrapper">
+            <div class="signature-block" style="display: inline-block; text-align: center;">
+                @if($isManagerOrAdmin)
+                    <div class="sig-role" style="font-weight: bold;">Mengetahui</div>
+                    <div class="sig-role" style="margin-top: 2px;">
+                    {{ $roleLabel }}@if($sigDivision)&nbsp;&nbsp;{{ $sigDivision }}@endif
+                    </div>
+                    <div style="display: inline-block; margin-top: 34px;">
+                        <span style="display: inline-block; white-space: nowrap; border-top: 1px solid #333; padding-top: 3px; font-weight: bold; font-size: 9px;">{{ $sigName }}</span>
+                    </div>
+                @else
+                    <div class="sig-line" style="width: 100%;"></div>
+                    <div class="sig-name">{{ $sigName }}</div>
+                    <div class="sig-role">{{ $roleText }}</div>
+                @endif
+            </div>
     </div>
 
 </body>

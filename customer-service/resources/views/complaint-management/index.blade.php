@@ -75,6 +75,7 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th class="px-5 py-3 text-center text-[11px] font-semibold text-gray-500 uppercase tracking-wider">No</th>
                         <th class="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Tanggal</th>
                         <th class="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Pelanggan</th>
                         <th class="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Kategori & Detail</th>
@@ -84,8 +85,11 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($complaints as $complaint)
+                    @forelse($complaints as $index => $complaint)
                     <tr class="hover:bg-gray-50 transition-colors duration-200">
+                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-500 text-center">
+                            {{ $complaints->firstItem() + $index }}
+                        </td>
                         <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-900">
                             {{ $complaint->created_at->format('d/m/Y H:i') }}
                         </td>
@@ -242,14 +246,21 @@
                                         @if(!$complaint->escalation_to)
                                             <!-- CS bisa menyelesaikan atau eskalasi hanya jika mereka yang handle -->
                                             @if($complaint->handled_by === auth()->id() || auth()->user()->role === 'manager' || auth()->user()->role === 'admin')
-                                                <form method="POST" action="{{ route('complaints.update-status', $complaint) }}" class="inline-block">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <input type="hidden" name="status" value="selesai">
-                                                    <button type="submit" class="text-white bg-green-600 hover:bg-green-700 transition-colors duration-200 px-3 py-1 rounded text-xs inline-flex items-center" onclick="return confirm('Tandai komplain ini sebagai selesai?')">
+                                                @if($complaint->cs_response)
+                                                    <form method="POST" action="{{ route('complaints.update-status', $complaint) }}" class="inline-block">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <input type="hidden" name="status" value="selesai">
+                                                        <input type="hidden" name="cs_response" value="{{ $complaint->cs_response }}">
+                                                        <button type="submit" class="text-white bg-green-600 hover:bg-green-700 transition-colors duration-200 px-3 py-1 rounded text-xs inline-flex items-center" onclick="return confirm('Tandai komplain ini sebagai selesai?')">
+                                                            <i class="fas fa-check mr-1"></i>Selesai
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    <a href="{{ route('complaints.show', $complaint) }}#cs-response" class="text-white bg-green-600 hover:bg-green-700 transition-colors duration-200 px-3 py-1 rounded text-xs inline-flex items-center" title="Isi komentar di halaman detail untuk menyelesaikan">
                                                         <i class="fas fa-check mr-1"></i>Selesai
-                                                    </button>
-                                                </form>
+                                                    </a>
+                                                @endif
                                                 <a href="{{ route('complaints.escalate-form', $complaint) }}" class="text-white bg-red-600 hover:bg-red-700 transition-colors duration-200 px-3 py-1 rounded text-xs inline-flex items-center">
                                                     <i class="fas fa-exclamation-triangle mr-1"></i>Eskalasi
                                                 </a>
@@ -270,14 +281,21 @@
                                             @if($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action: resolved'))
                                                 <!-- Manager sudah selesaikan masalah, CS perlu follow up ke customer -->
                                                 @if($complaint->handled_by === auth()->id() || auth()->user()->role === 'manager' || auth()->user()->role === 'admin')
-                                                    <form method="POST" action="{{ route('complaints.update-status', $complaint) }}" class="inline-block">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <input type="hidden" name="status" value="selesai">
-                                                        <button type="submit" class="text-white bg-green-600 hover:bg-green-700 transition-colors duration-200 px-3 py-1 rounded text-xs inline-flex items-center" onclick="return confirm('Konfirmasi bahwa customer sudah diberi feedback dan komplain selesai?')">
+                                                    @if($complaint->cs_response)
+                                                        <form method="POST" action="{{ route('complaints.update-status', $complaint) }}" class="inline-block">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <input type="hidden" name="status" value="selesai">
+                                                            <input type="hidden" name="cs_response" value="{{ $complaint->cs_response }}">
+                                                            <button type="submit" class="text-white bg-green-600 hover:bg-green-700 transition-colors duration-200 px-3 py-1 rounded text-xs inline-flex items-center" onclick="return confirm('Tandai komplain ini sebagai selesai?')">
+                                                                <i class="fas fa-check mr-1"></i>Konfirmasi Selesai
+                                                            </button>
+                                                        </form>
+                                                    @else
+                                                        <a href="{{ route('complaints.show', $complaint) }}#cs-response" class="text-white bg-green-600 hover:bg-green-700 transition-colors duration-200 px-3 py-1 rounded text-xs inline-flex items-center" title="Isi komentar di halaman detail untuk menyelesaikan">
                                                             <i class="fas fa-check mr-1"></i>Konfirmasi Selesai
-                                                        </button>
-                                                    </form>
+                                                        </a>
+                                                    @endif
                                                     <span class="text-green-600 text-xs bg-green-100 px-2 py-1 rounded ml-2">
                                                         <i class="fas fa-info-circle mr-1"></i>Manager Sudah Tangani
                                                     </span>
@@ -289,14 +307,21 @@
                                             @elseif($complaint->action_notes && str_contains($complaint->action_notes, 'Manager Action: return_to_cs'))
                                                 <!-- Manager kembalikan ke CS untuk ditangani lebih lanjut -->
                                                 @if($complaint->handled_by === auth()->id() || auth()->user()->role === 'manager' || auth()->user()->role === 'admin')
-                                                    <form method="POST" action="{{ route('complaints.update-status', $complaint) }}" class="inline-block">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <input type="hidden" name="status" value="selesai">
-                                                        <button type="submit" class="text-white bg-green-600 hover:bg-green-700 transition-colors duration-200 px-3 py-1 rounded text-xs inline-flex items-center" onclick="return confirm('Tandai komplain ini sebagai selesai?')">
+                                                    @if($complaint->cs_response)
+                                                        <form method="POST" action="{{ route('complaints.update-status', $complaint) }}" class="inline-block">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <input type="hidden" name="status" value="selesai">
+                                                            <input type="hidden" name="cs_response" value="{{ $complaint->cs_response }}">
+                                                            <button type="submit" class="text-white bg-green-600 hover:bg-green-700 transition-colors duration-200 px-3 py-1 rounded text-xs inline-flex items-center" onclick="return confirm('Tandai komplain ini sebagai selesai?')">
+                                                                <i class="fas fa-check mr-1"></i>Selesai
+                                                            </button>
+                                                        </form>
+                                                    @else
+                                                        <a href="{{ route('complaints.show', $complaint) }}#cs-response" class="text-white bg-green-600 hover:bg-green-700 transition-colors duration-200 px-3 py-1 rounded text-xs inline-flex items-center" title="Isi komentar di halaman detail untuk menyelesaikan">
                                                             <i class="fas fa-check mr-1"></i>Selesai
-                                                        </button>
-                                                    </form>
+                                                        </a>
+                                                    @endif
                                                     <span class="text-blue-600 text-xs bg-blue-100 px-2 py-1 rounded ml-2">
                                                         <i class="fas fa-arrow-left mr-1"></i>Dikembalikan Manager
                                                     </span>
@@ -346,7 +371,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="7" class="px-6 py-12 text-center text-gray-500">
                             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>

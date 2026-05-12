@@ -19,6 +19,7 @@ return new class extends Migration
             $table->text('address')->nullable();
             $table->string('password');
             $table->enum('role', ['customer', 'cs', 'manager', 'admin'])->default('customer');
+            $table->string('division')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamp('last_login_at')->nullable();
             $table->timestamps();
